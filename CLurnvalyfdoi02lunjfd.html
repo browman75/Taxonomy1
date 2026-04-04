@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第一站：原核生物界</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 卡片共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        /* 標題樣式 */
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
+        /* 互動按鈕樣式 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-action:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #0077AA;
+        }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
+            color: white;
+            border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .btn-red:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #B30015;
+        }
+
+        /* 圖片選擇器特效 */
+        .img-option {
+            border: 4px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .img-option.selected-correct {
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+            transform: scale(1.05);
+        }
+        .img-option.selected-wrong {
+            border-color: var(--dora-red);
+            opacity: 0.6;
+            transform: scale(0.95);
+        }
+
+        /* 勾選題客製化 */
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+        }
+        .check-item:active { background: #e0f2fe; }
+        .check-item input {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            accent-color: var(--dora-blue);
+        }
+
+        /* 重點提示框 */
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        /* 隱藏元素用 */
+        .hidden-step {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 提示彈跳視窗 */
+        #toast-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+        }
+        .toast-content {
+            background: white;
+            padding: 32px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 細菌字卡與配對區樣式 */
+        .bac-card {
+            background-color: var(--pure-white);
+            border: 2px solid var(--dora-blue);
+            color: var(--dora-blue);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            user-select: none;
+            font-size: 18px;
+        }
+        .bac-card:active {
+            transform: scale(0.95);
+        }
+        .bac-card.selected {
+            background-color: var(--dora-yellow);
+            border-color: #D4B400;
+            color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .bac-card.selected i {
+            color: var(--dora-red) !important;
+        }
+        
+        .drop-zone {
+            min-height: 54px;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+        .drop-zone .bac-card {
+            width: 100%;
+            margin: 0;
+            justify-content: center;
+            border: 2px solid transparent;
+            box-shadow: none;
+            background-color: var(--dora-blue);
+            color: white;
+        }
+        .drop-zone .bac-card i {
+            color: rgba(255,255,255,0.7) !important;
+        }
+        .drop-zone .bac-card:hover i {
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-microscope"></i>
+                第一站：原核生物界
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                進度 1/4
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 區塊 1：構造特徵 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-book-open"></i> 最古老的生命：原核生物
+            </h2>
+            <p class="mb-4">
+                原核生物是地球上目前已知最早出現的生物。在五界的生物之中，原核生物的構造最簡單，<strong>遺傳物質散布在細胞質中，並且沒有核膜包圍形成細胞核</strong>，因此稱為「原核生物」。
+            </p>
+
+            <!-- 視覺元素：原核細胞示意圖與構造標示 -->
+            <div class="bg-blue-50 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center mb-6 gap-6">
+                <!-- 左側：有的構造 -->
+                <div class="flex-1 text-center md:text-right w-full md:w-auto bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-black text-[var(--dora-blue)] text-lg mb-3"><i class="fa-solid fa-check-circle text-green-500"></i> 擁有的基本構造</h4>
+                    <ul class="inline-block text-left font-bold text-gray-700 space-y-2">
+                        <li>✔️ 細胞膜</li>
+                        <li>✔️ 細胞質</li>
+                        <li>✔️ 遺傳物質 <span class="text-sm text-gray-500 font-normal">(散布在細胞質)</span></li>
+                    </ul>
+                </div>
+                
+                <!-- 中間：圖片 -->
+                <div class="flex-shrink-0 relative">
+                    <img src="CLpic02.png" alt="原核細胞示意圖" class="max-w-[180px] h-auto object-contain rounded-xl shadow-md border-4 border-white" onerror="this.src='https://placehold.co/200x200/FFF/0096D6?text=CLpic02.png'">
+                </div>
+
+                <!-- 右側：沒有的構造 -->
+                <div class="flex-1 text-center md:text-left w-full md:w-auto bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-black text-[var(--dora-red)] text-lg mb-3"><i class="fa-solid fa-times-circle text-red-500"></i> 缺乏的複雜構造</h4>
+                    <ul class="inline-block text-left font-bold text-gray-700 space-y-2">
+                        <li>❌ 細胞核 <span class="text-sm text-gray-500 font-normal">(無核膜)</span></li>
+                        <li>❌ 粒線體</li>
+                        <li>❌ 葉綠體</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-pen-to-square"></i> 記憶吐司測驗 1</h3>
+                
+                <!-- Q1-1 -->
+                <p class="font-bold mb-3">Q1-1：請選出哪一種細胞屬於「原核生物」的細胞？</p>
+                <div class="flex gap-4 justify-center mb-4">
+                    <img src="CLpic01.png" alt="有細胞核的細胞" 
+                         class="img-option w-1/2 max-w-[200px] object-cover" 
+                         onerror="this.src='https://placehold.co/200x200/FFF/E3001B?text=CLpic01.png'"
+                         onclick="handleQ1_1(this, false)">
+                    
+                    <img src="CLpic02.png" alt="無細胞核的原核細胞" 
+                         class="img-option w-1/2 max-w-[200px] object-cover" 
+                         onerror="this.src='https://placehold.co/200x200/FFF/0096D6?text=CLpic02.png'"
+                         onclick="handleQ1_1(this, true)">
+                </div>
+
+                <!-- Q1-2 -->
+                <div id="q1-2-container" class="hidden-step bg-white p-4 rounded-lg shadow-inner mt-4">
+                    <p class="font-bold mb-3">Q1-2：太棒了！那為什麼選擇這張圖呢？</p>
+                    <div class="flex flex-col gap-2">
+                        <button class="btn-action w-full justify-center" onclick="handleQ1_2(false)">因為它有細胞核</button>
+                        <button class="btn-action w-full justify-center" onclick="handleQ1_2(true)">因為原核生物的細胞「沒有」細胞核</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2 勾選題 -->
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <p class="font-bold mb-3">Q2：原核生物具有下列哪些構造呢？（多選題）</p>
+                <div class="grid grid-cols-2 gap-3 mb-4 text-lg">
+                    <label class="check-item"><input type="checkbox" value="correct"> 細胞膜</label>
+                    <label class="check-item"><input type="checkbox" value="wrong"> 細胞核</label>
+                    <label class="check-item"><input type="checkbox" value="correct"> 細胞質</label>
+                    <label class="check-item"><input type="checkbox" value="wrong"> 粒線體</label>
+                    <label class="check-item"><input type="checkbox" value="correct"> 遺傳物質</label>
+                    <label class="check-item"><input type="checkbox" value="wrong"> 葉綠體</label>
+                </div>
+                <button class="btn-action" onclick="checkQ2()"><i class="fa-solid fa-check"></i> 確認答案</button>
+                
+                <div id="q2-feedback" class="hidden-step highlight-box mt-4">
+                    <i class="fa-solid fa-lightbulb text-[var(--dora-red)]"></i>
+                    <strong>正確說明：</strong><br>
+                    原核生物是最簡單的細胞，它們有細胞膜、細胞質和遺傳物質，但是<strong>沒有細胞核</strong>，也沒有粒線體、葉綠體等複雜的胞器喔！
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 2：分布與成員 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-earth-asia"></i> 分布廣泛的細菌家族
+            </h2>
+            <p class="mb-4">
+                原核生物的分布廣泛，棲息環境多樣，從高空、溫泉、海洋、冰原，甚至動物的體表上和腸道內都有它們的存在。原核生物包含了<strong>所有的細菌</strong>，通常依形態可分為球形、桿形和螺旋形等。
+            </p>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-shapes"></i> 記憶吐司測驗 2：細菌形狀配對</h3>
+                <p class="font-bold mb-4">請選出下列細胞分別屬於哪一種形狀的細菌？</p>
+                
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <img src="CLpic03.png" class="w-full rounded-lg mb-2 shadow" onerror="this.src='https://placehold.co/150x150/FFF/666?text=CLpic03.png'">
+                        <select id="shape1" class="w-full p-2 border-2 border-gray-300 rounded-lg text-lg">
+                            <option value="">請選擇</option>
+                            <option value="桿菌">桿菌</option><option value="螺旋菌">螺旋菌</option><option value="球菌">球菌</option>
+                        </select>
+                    </div>
+                    <div>
+                        <img src="CLpic04.png" class="w-full rounded-lg mb-2 shadow" onerror="this.src='https://placehold.co/150x150/FFF/666?text=CLpic04.png'">
+                        <select id="shape2" class="w-full p-2 border-2 border-gray-300 rounded-lg text-lg">
+                            <option value="">請選擇</option>
+                            <option value="桿菌">桿菌</option><option value="螺旋菌">螺旋菌</option><option value="球菌">球菌</option>
+                        </select>
+                    </div>
+                    <div>
+                        <img src="CLpic05.png" class="w-full rounded-lg mb-2 shadow" onerror="this.src='https://placehold.co/150x150/FFF/666?text=CLpic05.png'">
+                        <select id="shape3" class="w-full p-2 border-2 border-gray-300 rounded-lg text-lg">
+                            <option value="">請選擇</option>
+                            <option value="桿菌">桿菌</option><option value="螺旋菌">螺旋菌</option><option value="球菌">球菌</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button class="btn-action" onclick="checkShapes()"><i class="fa-solid fa-check"></i> 檢查形狀</button>
+                </div>
+            </div>
+
+            <!-- 推理環境小測驗 -->
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-temperature-arrow-up"></i> 極端環境生存推理</h3>
+                <p class="font-bold mb-2">點擊選取下方「細菌字卡」，再點擊對應的情境「答案格」，幫它們找到適合的家！</p>
+                <p class="text-sm text-gray-500 mb-4">（點擊字卡旁的 <i class="fa-solid fa-circle-info"></i> 可查看提示線索喔）</p>
+                
+                <!-- 待分配的細菌字卡庫 (已打亂順序) -->
+                <div id="bacteria-bank" class="flex flex-wrap gap-2 mb-6 min-h-[60px] p-3 bg-blue-50 rounded-xl border-2 border-dashed border-blue-300 items-center justify-center">
+                    <div class="bac-card" data-id="acid" onclick="handleCardClick(this)">
+                        幽門螺旋桿菌 <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors" onclick="showInfoCard('幽門螺旋桿菌', 'Helicobacter pylori', '寄生於人體胃部的細菌，可耐強酸環境，與胃部疾病相關'); event.stopPropagation();"></i>
+                    </div>
+                    <div class="bac-card" data-id="high-rad" onclick="handleCardClick(this)">
+                        耐輻射奇異球菌 <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors" onclick="showInfoCard('耐輻射奇異球菌', 'Deinococcus radiodurans', '耐強輻射細菌，常見於乾燥或高輻射環境，具強大DNA修復能力'); event.stopPropagation();"></i>
+                    </div>
+                    <div class="bac-card" data-id="cold" onclick="handleCardClick(this)">
+                        英格拉姆冷單胞菌 <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors" onclick="showInfoCard('英格拉姆冷單胞菌', 'Psychromonas ingrahamii', '嗜冷細菌，生活於極地冰海低溫環境，低溫下仍能代謝生長'); event.stopPropagation();"></i>
+                    </div>
+                    <div class="bac-card" data-id="high-temp" onclick="handleCardClick(this)">
+                        水生嗜熱菌 <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors" onclick="showInfoCard('水生嗜熱菌', 'Thermus aquaticus', '嗜熱細菌，生存於溫泉等高溫環境，酵素具耐熱特性'); event.stopPropagation();"></i>
+                    </div>
+                </div>
+                
+                <!-- 四個情境格子 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <!-- 高空 -->
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center">
+                        <img src="CLpic00-1.png" class="w-full h-24 object-cover rounded-lg mb-2" onerror="this.src='https://placehold.co/300x200/87CEEB/FFF?text=高空'">
+                        <p class="font-bold text-[var(--dora-blue)] mb-2 text-center text-lg">高空<br><span class="text-xs text-gray-500">(強紫外線)</span></p>
+                        <div class="drop-zone w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center p-2 cursor-pointer" data-answer="high-rad" onclick="handleZoneClick(this)">
+                            <span class="placeholder-text text-gray-400 text-sm text-center">點擊放置</span>
+                        </div>
+                    </div>
+                    <!-- 溫泉 -->
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center">
+                        <img src="CLpic00-2.png" class="w-full h-24 object-cover rounded-lg mb-2" onerror="this.src='https://placehold.co/300x200/FF7F50/FFF?text=溫泉'">
+                        <p class="font-bold text-[var(--dora-blue)] mb-2 text-center text-lg">溫泉<br><span class="text-xs text-gray-500">(高溫)</span></p>
+                        <div class="drop-zone w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center p-2 cursor-pointer" data-answer="high-temp" onclick="handleZoneClick(this)">
+                            <span class="placeholder-text text-gray-400 text-sm text-center">點擊放置</span>
+                        </div>
+                    </div>
+                    <!-- 胃 -->
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center">
+                        <img src="CLpic00-3.png" class="w-full h-24 object-cover rounded-lg mb-2" onerror="this.src='https://placehold.co/300x200/FFB6C1/FFF?text=胃部'">
+                        <p class="font-bold text-[var(--dora-blue)] mb-2 text-center text-lg">胃部<br><span class="text-xs text-gray-500">(強酸)</span></p>
+                        <div class="drop-zone w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center p-2 cursor-pointer" data-answer="acid" onclick="handleZoneClick(this)">
+                            <span class="placeholder-text text-gray-400 text-sm text-center">點擊放置</span>
+                        </div>
+                    </div>
+                    <!-- 冰原 -->
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center">
+                        <img src="CLpic00-4.png" class="w-full h-24 object-cover rounded-lg mb-2" onerror="this.src='https://placehold.co/300x200/E0FFFF/333?text=冰原'">
+                        <p class="font-bold text-[var(--dora-blue)] mb-2 text-center text-lg">冰原<br><span class="text-xs text-gray-500">(極低溫)</span></p>
+                        <div class="drop-zone w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center p-2 cursor-pointer" data-answer="cold" onclick="handleZoneClick(this)">
+                            <span class="placeholder-text text-gray-400 text-sm text-center">點擊放置</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-action w-full justify-center text-xl py-3" onclick="checkExtreme()"><i class="fa-solid fa-search"></i> 送出推理確認</button>
+                
+                <div id="extreme-feedback" class="hidden-step highlight-box mt-4">
+                    <i class="fa-solid fa-star text-[var(--dora-yellow)]"></i>
+                    <strong>推理正確！</strong><br>
+                    細菌的分布真的超級廣！許多細菌演化出能適應極端環境的能力，從滾燙的溫泉到冰冷的極地，都能看見它們的蹤跡。
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 3：補充學習 ================= -->
+        <section class="card-box bg-[#F0FBFF]">
+            <h2 class="section-title">
+                <i class="fa-solid fa-magnifying-glass-plus"></i> 補充學習：細菌的大小
+            </h2>
+            <p class="mb-4">
+                細菌的體型差異很大喔！<br>
+                最小的是 <strong>生殖道黴漿菌</strong> (Mycoplasma genitalium)，只有約 0.2 微米。<br>
+                而目前已知最大的細菌是 <strong>奈米比亞嗜硫珠菌</strong> (Thiomargarita namibiensis)，可以大到 0.7 毫米！
+            </p>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <p class="font-bold text-[var(--dora-red)] mb-2">小評量：確認細菌的尺度</p>
+                <p>既然奈米比亞嗜硫珠菌可以達到 0.7 毫米 (mm)，這代表我們可以直接用肉眼看到牠嗎？</p>
+                <div class="flex gap-2 mt-3">
+                    <button class="btn-action flex-1 justify-center" onclick="checkScale(true)">可以，肉眼可見！</button>
+                    <button class="btn-action flex-1 justify-center bg-gray-500 box-shadow-none" onclick="checkScale(false)">不行，一定要用顯微鏡</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 4：重點整理 ================= -->
+        <section class="highlight-box bg-[#E8F6FC] border-[var(--dora-blue)] border-l-8 rounded-xl p-6 mb-12 shadow-md">
+            <h2 class="text-2xl font-black text-[var(--dora-blue)] mb-4">
+                <i class="fa-solid fa-thumbtack"></i> 第一站重點整理
+            </h2>
+            <ul class="list-disc list-inside space-y-2 font-bold text-lg">
+                <li><strong>原核生物：</strong>地球上最早出現的生物種類。</li>
+                <li><strong>最大特徵：</strong>細胞內<span class="text-[var(--dora-red)] underline">沒有核膜</span>，遺傳物質散布在細胞質中。</li>
+                <li><strong>成員介紹：</strong>
+                    <ul class="list-circle list-inside ml-6 mt-1 text-gray-700 font-normal">
+                        <li>細菌：依形狀分為球形、桿形、螺旋形。</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ================= 下一頁按鈕 (鎖定狀態切換) ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成上方所有測驗以解鎖下一站
+            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLfuuephgh03jflduf.html" class="btn-red inline-flex items-center gap-3 no-underline animate-bounce">
+                <i class="fa-solid fa-door-open text-3xl"></i>
+                使用任意門前往下一站
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        // --- 通關進度追蹤 ---
+        let progress = {
+            q1: false,     // Q1-2 回答正確
+            q2: false,     // 構造多選正確
+            shapes: false, // 形狀配對正確
+            extreme: false,// 環境推理正確
+            scale: false   // 尺度評量正確
+        };
+
+        function checkProgress() {
+            if (progress.q1 && progress.q2 && progress.shapes && progress.extreme && progress.scale) {
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+            }
+        }
+
+        // --- 提示框功能 ---
+        function showToast(isSuccess, message) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fa-solid fa-face-smile-wink text-[var(--dora-blue)]"></i>';
+                title.innerHTML = '<span class="text-[var(--dora-blue)]">叮咚！太棒了！</span>';
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-[var(--dora-red)]"></i>';
+                title.innerHTML = '<span class="text-[var(--dora-red)]">哎呀！再想想看喔</span>';
+            }
+            msg.innerText = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeToast() {
+            document.getElementById('toast-modal').style.display = 'none';
+        }
+
+        // --- 顯示介紹字卡功能 ---
+        function showInfoCard(name, scientificName, desc) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            icon.innerHTML = '<i class="fa-solid fa-microscope text-[var(--dora-blue)]"></i>';
+            title.innerHTML = `<span class="text-[var(--dora-blue)]">${name}</span><br><span class="text-lg text-gray-500 italic font-normal">${scientificName}</span>`;
+            msg.innerText = desc;
+            modal.style.display = 'flex';
+        }
+
+        // --- Q1-1 選圖 ---
+        function handleQ1_1(element, isCorrect) {
+            document.querySelectorAll('.img-option').forEach(el => {
+                el.classList.remove('selected-correct', 'selected-wrong');
+            });
+            
+            if (isCorrect) {
+                element.classList.add('selected-correct');
+                showToast(true, '答對了！這就是原核生物的細胞圖。');
+                document.getElementById('q1-2-container').style.display = 'block';
+            } else {
+                element.classList.add('selected-wrong');
+                showToast(false, '這張圖裡面有一顆明顯的細胞核喔，不屬於原核生物。');
+            }
+        }
+
+        // --- Q1-2 理由 ---
+        function handleQ1_2(isCorrect) {
+            if (isCorrect) {
+                showToast(true, '完全正確！原核生物最大的特徵就是「沒有細胞核」！');
+                progress.q1 = true;
+                checkProgress();
+            } else {
+                showToast(false, '原核生物的名字就暗示了它「沒有」發育出完整的核膜喔！');
+            }
+        }
+
+        // --- Q2 勾選題 ---
+        function checkQ2() {
+            const checkboxes = document.querySelectorAll('.check-item input[type="checkbox"]');
+            let allCorrect = true;
+            let checkedCount = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+                if ((cb.value === 'correct' && !cb.checked) || (cb.value === 'wrong' && cb.checked)) {
+                    allCorrect = false;
+                }
+            });
+
+            if (checkedCount === 0) {
+                showToast(false, '請至少勾選一個構造喔！');
+                return;
+            }
+
+            if (allCorrect) {
+                showToast(true, '答對了！原核生物有細胞膜、細胞質和遺傳物質。');
+                document.getElementById('q2-feedback').style.display = 'block';
+                progress.q2 = true;
+                checkProgress();
+            } else {
+                showToast(false, '有地方勾錯囉！記得原核生物「沒有細胞核」，也沒有複雜的胞器（如粒線體、葉綠體）。');
+            }
+        }
+
+        // --- 形狀配對 ---
+        function checkShapes() {
+            const s1 = document.getElementById('shape1').value;
+            const s2 = document.getElementById('shape2').value;
+            const s3 = document.getElementById('shape3').value;
+
+            if (!s1 || !s2 || !s3) {
+                showToast(false, '請將三張圖的形狀都選擇完畢喔！');
+                return;
+            }
+
+            if (s1 === '球菌' && s2 === '桿菌' && s3 === '螺旋菌') {
+                showToast(true, '完全正確！分別是球菌、桿菌和螺旋菌！');
+                progress.shapes = true;
+                checkProgress();
+            } else {
+                showToast(false, '順序好像有點錯了，再仔細觀察圖片的形狀喔！(提示：第一張圓圓的，第二張長條，第三張彎曲)');
+            }
+        }
+
+        // --- 極端環境放置邏輯 ---
+        let activeCard = null;
+
+        function handleCardClick(card) {
+            if (card.parentElement.id === 'bacteria-bank') {
+                // 如果點擊的是題庫區的卡片
+                if (activeCard === card) {
+                    // 取消選取
+                    card.classList.remove('selected');
+                    activeCard = null;
+                } else {
+                    // 選取新卡片
+                    if(activeCard) activeCard.classList.remove('selected');
+                    card.classList.add('selected');
+                    activeCard = card;
+                }
+            } else {
+                // 如果點擊的是已經放在格子裡的卡片 -> 退回題庫區
+                const zone = card.parentElement;
+                document.getElementById('bacteria-bank').appendChild(card);
+                zone.querySelector('.placeholder-text').style.display = 'block';
+            }
+        }
+
+        function handleZoneClick(zone) {
+            if (activeCard) {
+                // 若格子裡已經有卡片，先將原本的卡片退回題庫
+                const existingCard = zone.querySelector('.bac-card');
+                if (existingCard) {
+                    document.getElementById('bacteria-bank').appendChild(existingCard);
+                }
+                
+                // 將選取的卡片放入格子
+                zone.appendChild(activeCard);
+                activeCard.classList.remove('selected');
+                activeCard = null;
+                zone.querySelector('.placeholder-text').style.display = 'none';
+                
+            } else {
+                // 若使用者沒選卡片就點擊格子，且格子內已有卡片，等同於點擊卡片退回題庫
+                const existingCard = zone.querySelector('.bac-card');
+                if (existingCard) {
+                    document.getElementById('bacteria-bank').appendChild(existingCard);
+                    zone.querySelector('.placeholder-text').style.display = 'block';
+                }
+            }
+        }
+
+        function checkExtreme() {
+            const zones = document.querySelectorAll('.drop-zone');
+            let allCorrect = true;
+            let answered = 0;
+
+            zones.forEach(zone => {
+                const card = zone.querySelector('.bac-card');
+                if (card) {
+                    answered++;
+                    if (card.getAttribute('data-id') !== zone.getAttribute('data-answer')) {
+                        allCorrect = false;
+                    }
+                } else {
+                    allCorrect = false;
+                }
+            });
+
+            if(answered < 4) {
+                showToast(false, '請將四種「細菌字卡」都放入對應的情境格子中喔！');
+                return;
+            }
+
+            if (allCorrect) {
+                showToast(true, '太厲害了！你成功幫它們找到適合的極端環境！');
+                document.getElementById('extreme-feedback').style.display = 'block';
+                progress.extreme = true;
+                checkProgress();
+            } else {
+                showToast(false, '有些配對不對喔！你可以點選字卡旁的 (i) 圖示，仔細看它們的介紹來尋找線索。');
+            }
+        }
+
+        // --- 細菌尺度小評量 ---
+        function checkScale(isCorrect) {
+            if(isCorrect) {
+                showToast(true, '答對了！0.7毫米（像鉛筆筆尖那麼大）人類肉眼是勉強可以看見的，這在細菌界是超級巨無霸！');
+                progress.scale = true;
+                checkProgress();
+            } else {
+                showToast(false, '再想一下喔！0.7毫米大約是自動鉛筆筆芯的粗細，其實肉眼是看得到的喔！');
+            }
+        }
+    </script>
+</body>
+</html>

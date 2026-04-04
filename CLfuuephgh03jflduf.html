@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第二站：細菌是敵是友？</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 卡片共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
+        /* 互動按鈕樣式 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
+            color: white;
+            border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        .hidden-step { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        /* 勾選題客製化 */
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .check-item:hover { background: #e0f2fe; }
+        .check-item input { width: 24px; height: 24px; margin-right: 12px; accent-color: var(--dora-blue); }
+
+        /* 字卡放置區樣式 (小牛給藥) */
+        .bac-card {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 18px;
+        }
+        .bac-card:active { transform: scale(0.95); }
+        .bac-card.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        .bac-card.selected i { color: var(--dora-red) !important; }
+        
+        .drop-zone { min-height: 60px; background-color: #f8fafc; transition: all 0.2s; }
+        .drop-zone .bac-card {
+            width: 100%; margin: 0; justify-content: center; border: 2px solid transparent;
+            box-shadow: none; background-color: var(--dora-blue); color: white;
+        }
+
+        /* 客製化拉桿 (Slider) */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent; margin: 16px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 36px; width: 36px; border-radius: 50%;
+            background: var(--dora-red); cursor: pointer; margin-top: -14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 4px solid white; transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:active {
+            transform: scale(1.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 10px; cursor: pointer; background: #CBD5E1; border-radius: 5px;
+        }
+        /* 三段漸層背景模擬 */
+        .slider-bg {
+            background: linear-gradient(to right, #93C5FD 0%, #86EFAC 50%, #FCA5A5 100%);
+        }
+        input[type=range].slider-custom::-webkit-slider-runnable-track {
+            background: transparent;
+        }
+
+        /* 提示彈跳視窗 */
+        #toast-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center;
+        }
+        .toast-content {
+            background: white; padding: 32px; border-radius: 24px; text-align: center;
+            max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-microscope"></i>
+                第二站：細菌是敵是友？
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                進度 2/4
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 區塊 1：生態角色 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-recycle"></i> 細菌的生態角色
+            </h2>
+            
+            <div class="flex flex-col md:flex-row items-center gap-6 mb-4">
+                <div class="flex-1">
+                    <p class="mb-4">
+                        細菌在生態上扮演著十分重要的角色。對環境而言，有些細菌能<strong>分解環境中的生物遺體與排泄物</strong>，有利於自然界中物質的循環。
+                    </p>
+                </div>
+                <!-- 視覺元素：幾何無核膜細胞示意圖 -->
+                <div class="flex-shrink-0 bg-blue-50 p-4 rounded-xl text-center w-full md:w-auto shadow-sm border-2 border-dashed border-blue-200">
+                    <svg viewBox="0 0 200 100" class="w-full max-w-[200px] mx-auto mb-2">
+                        <!-- 莢膜/細胞壁 (橢圓) -->
+                        <rect x="10" y="10" width="180" height="80" rx="40" fill="#BBDEFB" stroke="#1E88E5" stroke-width="4"/>
+                        <!-- 細胞膜 (虛線橢圓) -->
+                        <rect x="18" y="18" width="164" height="64" rx="32" fill="#E3F2FD" stroke="#42A5F5" stroke-width="2" stroke-dasharray="6,4"/>
+                        <!-- 遺傳物質散布 (簡單曲線) -->
+                        <path d="M 50 50 Q 70 20, 90 50 T 130 50 T 150 50" fill="none" stroke="#E3001B" stroke-width="3"/>
+                        <path d="M 55 55 Q 80 80, 100 55 T 145 55" fill="none" stroke="#E3001B" stroke-width="3"/>
+                        <!-- 細胞質中的核糖體 (小點) -->
+                        <circle cx="40" cy="40" r="3" fill="#4CAF50"/><circle cx="50" cy="70" r="3" fill="#4CAF50"/>
+                        <circle cx="160" cy="35" r="3" fill="#4CAF50"/><circle cx="150" cy="65" r="3" fill="#4CAF50"/>
+                        <circle cx="90" cy="25" r="3" fill="#4CAF50"/><circle cx="110" cy="75" r="3" fill="#4CAF50"/>
+                    </svg>
+                    <p class="text-sm font-bold text-gray-500">（幾何簡化版：無核膜的細菌細胞）</p>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-leaf"></i> 記憶吐司測驗 1</h3>
+                
+                <p class="font-bold mb-3">Q1-1：根據課文，細菌對環境而言擔任什麼角色？</p>
+                <div class="flex flex-col gap-3 mb-6">
+                    <button class="btn-action w-full justify-start text-left bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50" onclick="handleQ1_1(false, '生產者')">
+                        <span class="w-24 font-black text-green-600 flex-shrink-0">生產者</span> <span class="text-sm md:text-base">能將無機物轉換為有機養分的生物</span>
+                    </button>
+                    <button class="btn-action w-full justify-start text-left bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50" onclick="handleQ1_1(false, '消費者')">
+                        <span class="w-24 font-black text-orange-600 flex-shrink-0">消費者</span> <span class="text-sm md:text-base">必須攝食其他生物來獲取養分的生物</span>
+                    </button>
+                    <button class="btn-action w-full justify-start text-left bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50" onclick="handleQ1_1(true, '分解者')">
+                        <span class="w-24 font-black text-[var(--dora-blue)] flex-shrink-0">分解者</span> <span class="text-sm md:text-base">能分解生物遺體或排泄物以獲取養分的生物</span>
+                    </button>
+                </div>
+
+                <div id="q1-2-container" class="hidden-step">
+                    <hr class="border-gray-300 my-4 border-dashed">
+                    <p class="font-bold mb-3">Q1-2：如果環境中缺少細菌，可能會發生什麼問題？</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <button class="btn-action w-full" onclick="handleQ1_2(false)">動物會演化得更快</button>
+                        <button class="btn-action w-full" onclick="handleQ1_2(true)">生物遺體或排泄物堆積，無法被分解</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 2：與生物的關係 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-handshake-angle"></i> 細菌對生物的關係
+            </h2>
+            <p class="mb-4">
+                對生物而言，有些細菌與生物關係密切，例如牛、羊等草食性動物腸道內具有多種<strong>可協助消化纖維素的細菌</strong>。
+            </p>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                
+                <p class="font-bold mb-3">Q2-1：請問這種細菌與動物間「互相幫助」的關係稱為什麼？</p>
+                <div class="flex flex-col md:flex-row gap-3 mb-6">
+                    <button class="btn-action flex-1 text-lg py-3" onclick="handleQ2_1(true)">🤝 共同生存</button>
+                    <button class="btn-action flex-1 text-lg py-3" onclick="handleQ2_1(false)">⚔️ 競爭、互相傷害</button>
+                </div>
+
+                <!-- 獸醫情境操作題 -->
+                <div id="q2-2-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6 mt-4">
+                    <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-user-doctor"></i> 獸醫實習生任務：拯救小牛！</h3>
+                    <p class="mb-4 text-gray-700">獸醫發現一隻新生的小牛營養不良，因為剛出生腸胃裡益生菌不足，無法消化吃進去的草。<br><strong>任務：</strong>請點選下方字卡看「酵素介紹」，並找出能幫助小牛的細菌，放入藥盒中！</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-6 items-center">
+                        
+                        <!-- 待選細菌字卡 (左側) -->
+                        <div class="flex-1 w-full order-2 md:order-1">
+                            <p class="font-bold text-[var(--dora-blue)] mb-2">可選用的細菌字卡：</p>
+                            <div id="calf-bacteria-bank" class="flex flex-col gap-3 min-h-[160px] p-3 bg-blue-50 rounded-xl border border-blue-200">
+                                <div class="bac-card w-full" data-id="starch" onclick="handleCalfCardClick(this)">
+                                    <span>🦠 細菌 A</span>
+                                    <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors p-2" onclick="showInfoCard('細菌 A', '澱粉分解菌', '能產生澱粉酶，負責將澱粉分解成葡萄糖。'); event.stopPropagation();"></i>
+                                </div>
+                                <div class="bac-card w-full" data-id="cellulose" onclick="handleCalfCardClick(this)">
+                                    <span>🦠 細菌 B</span>
+                                    <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors p-2" onclick="showInfoCard('細菌 B', '纖維素分解菌', '能產生纖維素酶，負責將植物厚厚的纖維素分解掉！'); event.stopPropagation();"></i>
+                                </div>
+                                <div class="bac-card w-full" data-id="protein" onclick="handleCalfCardClick(this)">
+                                    <span>🦠 細菌 C</span>
+                                    <i class="fa-solid fa-circle-info text-gray-400 hover:text-[var(--dora-red)] transition-colors p-2" onclick="showInfoCard('細菌 C', '蛋白質分解菌', '能產生蛋白酶，負責將肉類等蛋白質分解成胺基酸。'); event.stopPropagation();"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 獸醫圖片與投藥區 (右側) -->
+                        <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center w-full order-1 md:order-2">
+                            <!-- 已更新圖片路徑為 CLpic06.png -->
+                            <img src="CLpic06.png" alt="獸醫與小牛" class="h-40 mx-auto object-cover rounded-lg mb-3 shadow" onerror="this.src='https://placehold.co/300x200/4CAF50/FFF?text=獸醫與小牛(CLpic06.png)'">
+                            <p class="font-bold text-[var(--dora-red)] mb-2"><i class="fa-solid fa-prescription-bottle-medical"></i> 小牛專用益生菌藥盒</p>
+                            <div class="drop-zone w-full border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center p-2 cursor-pointer bg-gray-50" onclick="handleCalfZoneClick(this)">
+                                <span class="placeholder-text text-gray-400 text-sm">點選左側字卡後，再點此放入</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button class="btn-action w-full mt-6 text-xl py-3" onclick="checkCalf()"><i class="fa-solid fa-syringe"></i> 確認投餵</button>
+                    
+                    <div id="calf-feedback" class="hidden-step highlight-box mt-4">
+                        <i class="fa-solid fa-star text-[var(--dora-yellow)]"></i>
+                        <strong>正確說明：</strong><br>
+                        小牛一出生是無法自行消化草（纖維素）的，必須從環境中建立腸胃道菌叢，補充「纖維素分解菌」就能幫助小牛順利吸收養分長大囉！
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 3：與人類的關係 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-people-arrows"></i> 細菌與人類的關係
+            </h2>
+            <p class="mb-3">
+                細菌也與我們的生活息息相關，人們常喝的發酵乳裡含有可產生乳酸的細菌，能幫助人體維持腸道健康。人的體表也有大量的共生細菌，而且每個人體表的細菌種類不同。皮膚上常駐的共生細菌能隔離有害菌種，使致病微生物不易在皮膚表面生長。這些體表和體內的微生物有助於人類的代謝與防禦作用。
+            </p>
+            <p class="mb-6">
+                但也有些細菌會導致嚴重的疾病，例如引起肺結核的<strong>結核桿菌</strong>和引起食物中毒的<strong>金黃色葡萄球菌</strong>等，因此注意衛生和食物正確保存很重要。
+            </p>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <!-- Q3-1 -->
+                <p class="font-bold mb-3">Q3-1：如果想在人類身上採集細菌，可以在哪些部位或器官上採集到呢？（這題是多選喔）</p>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6 text-base md:text-lg">
+                    <label class="check-item"><input type="checkbox" class="q3-1-check"> 皮膚</label>
+                    <label class="check-item"><input type="checkbox" class="q3-1-check"> 毛髮</label>
+                    <label class="check-item"><input type="checkbox" class="q3-1-check"> 消化道</label>
+                    <label class="check-item"><input type="checkbox" class="q3-1-check"> 呼吸道</label>
+                    <label class="check-item col-span-2 md:col-span-1"><input type="checkbox" class="q3-1-check"> 口腔</label>
+                </div>
+                <button class="btn-action w-full md:w-auto" onclick="checkQ3_1()"><i class="fa-solid fa-magnifying-glass"></i> 確認採集位置</button>
+                
+                <!-- Q3-2：新增的細菌好壞觀念題 -->
+                <div id="q3-2-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6 mt-6">
+                    <p class="font-bold mb-3">Q3-2：辨別細菌是好是壞？請勾選出<span class="text-[var(--dora-red)]">所有正確</span>的敘述：</p>
+                    <div class="flex flex-col gap-3 mb-6 text-base md:text-lg">
+                        <label class="check-item">
+                            <input type="checkbox" class="q3-2-check" data-correct="true"> 
+                            有些細菌與人體共存，而且是必要的，但過多、過少都可能會造成疾病
+                        </label>
+                        <label class="check-item">
+                            <input type="checkbox" class="q3-2-check" data-correct="true"> 
+                            有些細菌不與人體共存，入侵可能會造成疾病
+                        </label>
+                        <label class="check-item">
+                            <input type="checkbox" class="q3-2-check" data-correct="true"> 
+                            有些細菌不與人類共存，對人體的影響也不大
+                        </label>
+                        <label class="check-item">
+                            <input type="checkbox" class="q3-2-check" data-correct="false"> 
+                            細菌都與人體無關，不影響人類生存
+                        </label>
+                    </div>
+                    <button class="btn-action w-full md:w-auto" onclick="checkQ3_2()"><i class="fa-solid fa-check-to-slot"></i> 確認觀念</button>
+                </div>
+
+                <!-- Q3-3：拉桿模擬器 (原 Q3-2) -->
+                <div id="q3-3-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6 mt-6">
+                    <h3 class="font-black text-[var(--dora-red)] mb-2 text-xl"><i class="fa-solid fa-sliders"></i> Q3-3：人體菌叢平衡模擬器</h3>
+                    <p class="mb-4 text-gray-700">既然身上都是細菌，為什麼我們不會每天生病呢？請試著滑動下方拉桿，找出人體與細菌的「健康平衡點」！</p>
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <!-- 腸道模擬器 -->
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                            <div class="font-bold text-[var(--dora-blue)] mb-2 text-center border-b pb-2">
+                                腸道<br><span class="text-sm text-gray-500 font-normal">(乳酸桿菌、雙歧桿菌等)</span>
+                            </div>
+                            <div class="relative h-4 rounded-full slider-bg my-4">
+                                <input type="range" min="0" max="2" value="2" class="slider-custom absolute inset-0" id="slider-gut" oninput="updateSlider('gut')">
+                            </div>
+                            <div id="status-gut" class="text-center font-bold p-3 rounded-lg bg-gray-100 text-gray-600 text-sm flex-grow flex items-center justify-center">請滑動拉桿觀察</div>
+                        </div>
+
+                        <!-- 口腔模擬器 -->
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                            <div class="font-bold text-[var(--dora-blue)] mb-2 text-center border-b pb-2">
+                                口腔<br><span class="text-sm text-gray-500 font-normal">(乳酸桿菌)</span>
+                            </div>
+                            <div class="relative h-4 rounded-full slider-bg my-4">
+                                <input type="range" min="0" max="2" value="0" class="slider-custom absolute inset-0" id="slider-oral" oninput="updateSlider('oral')">
+                            </div>
+                            <div id="status-oral" class="text-center font-bold p-3 rounded-lg bg-gray-100 text-gray-600 text-sm flex-grow flex items-center justify-center">請滑動拉桿觀察</div>
+                        </div>
+
+                        <!-- 皮膚模擬器 -->
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                            <div class="font-bold text-[var(--dora-blue)] mb-2 text-center border-b pb-2">
+                                皮膚<br><span class="text-sm text-gray-500 font-normal">(表皮葡萄球菌等)</span>
+                            </div>
+                            <div class="relative h-4 rounded-full slider-bg my-4">
+                                <input type="range" min="0" max="2" value="2" class="slider-custom absolute inset-0" id="slider-skin" oninput="updateSlider('skin')">
+                            </div>
+                            <div id="status-skin" class="text-center font-bold p-3 rounded-lg bg-gray-100 text-gray-600 text-sm flex-grow flex items-center justify-center">請滑動拉桿觀察</div>
+                        </div>
+                    </div>
+
+                    <div id="balance-feedback" class="hidden-step highlight-box mt-6">
+                        <i class="fa-solid fa-scale-balanced text-[var(--dora-blue)] text-xl mb-2"></i><br>
+                        <strong>正確解答：平衡達成！</strong><br>
+                        人體的免疫系統與細菌維持著奇妙的「平衡關係」，太多或太少都會造成疾病喔！
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 4：重點整理 ================= -->
+        <section class="highlight-box bg-[#E8F6FC] border-[var(--dora-blue)] border-l-8 rounded-xl p-6 mb-12 shadow-md">
+            <h2 class="text-2xl font-black text-[var(--dora-blue)] mb-4">
+                <i class="fa-solid fa-thumbtack"></i> 第二站重點整理
+            </h2>
+            <ul class="list-disc list-inside space-y-3 font-bold text-lg">
+                <li><strong>生態角色：</strong>
+                    <span class="text-gray-700 font-normal">有些細菌能擔任<span class="text-[var(--dora-red)] font-bold">分解者</span>，分解環境中的生物遺體與排泄物，有利自然界物質循環。</span>
+                </li>
+                <li><strong>與生物關係：</strong>
+                    <span class="text-gray-700 font-normal">部分細菌與生物<span class="text-[var(--dora-red)] font-bold">共同生存</span>，例如草食性動物腸道內的細菌可協助消化纖維素。</span>
+                </li>
+                <li><strong>與人類關係：</strong>
+                    <ul class="list-circle list-inside ml-8 mt-2 text-gray-700 font-normal space-y-1">
+                        <li><strong>益處：</strong>發酵乳中的細菌助腸道健康；體表共生菌能隔離有害菌種，有助防禦與代謝。</li>
+                        <li><strong>害處：</strong>部分細菌會致病（如結核桿菌、金黃色葡萄球菌）。</li>
+                        <li><strong>關鍵：</strong>人體免疫系統需與細菌維持<span class="text-[var(--dora-red)] font-bold">平衡關係</span>，太多或太少皆可能引發疾病。</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ================= 下一頁按鈕 ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成所有測驗解鎖任意門
+            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLjdjncdunc04kkiiu.html" class="btn-red animate-bounce no-underline">
+                <i class="fa-solid fa-door-open text-3xl"></i>
+                使用任意門前往下一站
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        // 通關追蹤 (加入了 q3_3)
+        let progress = {
+            q1_1: false, q1_2: false,
+            q2_1: false, q2_2: false,
+            q3_1: false, q3_2: false, q3_3: false
+        };
+
+        function checkProgress() {
+            if (Object.values(progress).every(v => v === true)) {
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+            }
+        }
+
+        // Toast 提示框
+        function showToast(isSuccess, message) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fa-solid fa-face-smile-wink text-[var(--dora-blue)]"></i>';
+                title.innerHTML = '<span class="text-[var(--dora-blue)]">叮咚！太棒了！</span>';
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-[var(--dora-red)]"></i>';
+                title.innerHTML = '<span class="text-[var(--dora-red)]">哎呀！再想想看喔</span>';
+            }
+            msg.innerText = message;
+            modal.style.display = 'flex';
+        }
+        function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
+        
+        // 顯示說明字卡 (小牛遊戲)
+        function showInfoCard(name, subtitle, desc) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+            icon.innerHTML = '<i class="fa-solid fa-microscope text-[var(--dora-blue)]"></i>';
+            title.innerHTML = `<span class="text-[var(--dora-blue)]">${name}</span><br><span class="text-lg text-gray-500 font-normal">${subtitle}</span>`;
+            msg.innerText = desc;
+            modal.style.display = 'flex';
+        }
+
+        // --- Q1-1 & Q1-2 ---
+        function handleQ1_1(isCorrect, ans) {
+            event.target.closest('.flex').querySelectorAll('.btn-action').forEach(btn => {
+                btn.classList.remove('border-[var(--dora-blue)]', 'bg-blue-50');
+                btn.classList.add('border-gray-200', 'bg-white');
+            });
+            const btn = event.target.closest('.btn-action');
+            btn.classList.remove('border-gray-200', 'bg-white');
+            btn.classList.add('border-[var(--dora-blue)]', 'bg-blue-50');
+
+            if (isCorrect) {
+                showToast(true, '答對了！細菌可以將環境中的遺體或排泄物分解。');
+                document.getElementById('q1-2-container').style.display = 'block';
+                progress.q1_1 = true;
+                checkProgress();
+            } else {
+                showToast(false, '根據課文，細菌能將遺體「分解」以利物質循環，所以不是' + ans + '喔！');
+            }
+        }
+
+        function handleQ1_2(isCorrect) {
+            if (isCorrect) {
+                showToast(true, '完全正確！沒有細菌這類分解者，地球就會被垃圾和排泄物淹沒了！');
+                progress.q1_2 = true;
+                checkProgress();
+            } else {
+                showToast(false, '細菌的主要功能是清除垃圾(分解)，如果不見了，遺體與排泄物就會堆積喔！');
+            }
+        }
+
+        // --- Q2-1 ---
+        function handleQ2_1(isCorrect) {
+            if (isCorrect) {
+                showToast(true, '答對了！牛提供細菌住的地方和食物，細菌幫牛消化纖維素，這是共同生存的好夥伴關係！');
+                document.getElementById('q2-2-container').style.display = 'block';
+                progress.q2_1 = true;
+                checkProgress();
+            } else {
+                showToast(false, '細菌是在幫忙牛消化食物喔！不是競爭或傷害。');
+            }
+        }
+
+        // --- Q2-2 小牛操作題 ---
+        let activeCalfCard = null;
+
+        function handleCalfCardClick(card) {
+            if (card.parentElement.id === 'calf-bacteria-bank') {
+                if (activeCalfCard === card) { 
+                    card.classList.remove('selected'); 
+                    activeCalfCard = null; 
+                } else {
+                    if(activeCalfCard) activeCalfCard.classList.remove('selected');
+                    card.classList.add('selected'); 
+                    activeCalfCard = card;
+                }
+            } else {
+                const zone = card.parentElement;
+                document.getElementById('calf-bacteria-bank').appendChild(card);
+                zone.querySelector('.placeholder-text').style.display = 'block';
+            }
+        }
+
+        function handleCalfZoneClick(zone) {
+            if (activeCalfCard) {
+                const existingCard = zone.querySelector('.bac-card');
+                if (existingCard) {
+                    document.getElementById('calf-bacteria-bank').appendChild(existingCard);
+                }
+                zone.appendChild(activeCalfCard);
+                activeCalfCard.classList.remove('selected'); 
+                activeCalfCard = null;
+                zone.querySelector('.placeholder-text').style.display = 'none';
+            } else {
+                const existingCard = zone.querySelector('.bac-card');
+                if (existingCard) {
+                    document.getElementById('calf-bacteria-bank').appendChild(existingCard);
+                    zone.querySelector('.placeholder-text').style.display = 'block';
+                }
+            }
+        }
+
+        function checkCalf() {
+            const zone = document.querySelector('.drop-zone');
+            const card = zone.querySelector('.bac-card');
+            
+            if (!card) { 
+                showToast(false, '請幫小牛挑選一個適當的細菌放入藥盒喔！'); 
+                return; 
+            }
+            
+            if (card.getAttribute('data-id') === 'cellulose') {
+                showToast(true, '太厲害了！你選了能分解植物草料的「纖維素分解菌」，小牛有救了！');
+                document.getElementById('calf-feedback').style.display = 'block';
+                progress.q2_2 = true;
+                checkProgress();
+            } else {
+                showToast(false, '小牛吃的是「草（富含植物纖維）」，請點開字卡右側的 (i) 看看哪種細菌能分解它喔！');
+            }
+        }
+
+        // --- Q3-1 ---
+        function checkQ3_1() {
+            const checkboxes = document.querySelectorAll('.q3-1-check');
+            let checkedCount = 0;
+            checkboxes.forEach(cb => { if(cb.checked) checkedCount++; });
+            
+            if (checkedCount === 5) {
+                showToast(true, '全對！人體內外幾乎都有細菌共生！我們接著來看看細菌的好壞之分。');
+                document.getElementById('q3-2-container').style.display = 'block';
+                progress.q3_1 = true;
+                checkProgress();
+            } else {
+                showToast(false, '其實以上「五個部位」都可以採集到共生細菌喔！請全部都勾選起來！');
+            }
+        }
+
+        // --- Q3-2 ---
+        function checkQ3_2() {
+            const checkboxes = document.querySelectorAll('.q3-2-check');
+            let isCorrect = true;
+            
+            checkboxes.forEach(cb => {
+                const shouldBeChecked = cb.getAttribute('data-correct') === 'true';
+                if (cb.checked !== shouldBeChecked) {
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect) {
+                showToast(true, '觀念非常清楚！細菌種類繁多，有些能與人和平共處甚至不可或缺，有些則會導致疾病。來試試看平衡模擬器吧！');
+                document.getElementById('q3-3-container').style.display = 'block';
+                progress.q3_2 = true;
+                checkProgress();
+                // 初始化拉桿顯示
+                updateSlider('gut'); updateSlider('oral'); updateSlider('skin');
+            } else {
+                showToast(false, '哎呀，好像有勾錯或漏勾喔！請再仔細看看哪些是「正確」的敘述（提示：前三個選項的敘述都是對的喔！）');
+            }
+        }
+
+        // --- Q3-3 拉桿模擬器 ---
+        const symptoms = {
+            gut: [
+                '❌ 細菌太少：營養吸收不良、免疫力下降、便秘', 
+                '✅ 健康平衡：消化順暢、腸道防禦力佳', 
+                '❌ 細菌太多：腹脹、腹瀉、菌相失衡'
+            ],
+            oral: [
+                '❌ 細菌太少：牙齦容易發炎、口腔屏障減弱', 
+                '✅ 健康平衡：維持口腔健康環境', 
+                '❌ 細菌太多：嚴重感染發炎、口腔白斑'
+            ],
+            skin: [
+                '❌ 細菌太少：皮膚乾燥、屏障弱、容易被感染', 
+                '✅ 健康平衡：皮膚狀態穩定，能隔離致病菌', 
+                '❌ 細菌太多：容易引發痤瘡(青春痘)、毛囊炎'
+            ]
+        };
+
+        function updateSlider(part) {
+            const val = parseInt(document.getElementById(`slider-${part}`).value);
+            const statusDiv = document.getElementById(`status-${part}`);
+            
+            statusDiv.innerText = symptoms[part][val];
+            
+            if (val === 0 || val === 2) {
+                statusDiv.className = "text-center font-bold p-3 rounded-lg bg-red-100 text-red-700 border border-red-300 transition-colors text-sm flex-grow flex items-center justify-center";
+            } else {
+                statusDiv.className = "text-center font-bold p-3 rounded-lg bg-green-100 text-green-700 border border-green-300 transition-colors text-sm flex-grow flex items-center justify-center";
+            }
+
+            checkSliderBalance();
+        }
+
+        function checkSliderBalance() {
+            const gut = document.getElementById('slider-gut').value;
+            const oral = document.getElementById('slider-oral').value;
+            const skin = document.getElementById('slider-skin').value;
+
+            // 當三個部位都在中間值 1 (健康平衡狀態)
+            if (gut === "1" && oral === "1" && skin === "1") {
+                document.getElementById('balance-feedback').style.display = 'block';
+                progress.q3_3 = true;
+                checkProgress();
+            }
+        }
+    </script>
+</body>
+</html>

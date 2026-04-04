@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第四站：原生生物界</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 卡片共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
+        /* 互動按鈕樣式 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
+            color: white;
+            border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        .hidden-step { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        /* 勾選題客製化 */
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: var(--dora-blue);
+        }
+        .check-item:hover { background: #e0f2fe; }
+        .check-item input { width: 24px; height: 24px; margin-right: 12px; accent-color: var(--dora-blue); }
+
+        /* 字卡與配對區樣式 (階層分類題) */
+        .bac-card {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 18px; margin: 4px;
+        }
+        .bac-card:active { transform: scale(0.95); }
+        .bac-card.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        
+        .drop-zone { 
+            min-height: 60px; background-color: rgba(255,255,255,0.7); 
+            border: 2px dashed #9ca3af; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+            padding: 8px; transition: all 0.2s; cursor: pointer; gap: 8px;
+        }
+        .drop-zone:hover { background-color: #f3f4f6; border-color: var(--dora-blue); }
+        .drop-zone .bac-card {
+            margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent;
+        }
+
+        /* 提示彈跳視窗 */
+        #toast-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center;
+        }
+        .toast-content {
+            background: white; padding: 32px; border-radius: 24px; text-align: center;
+            max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 擴展動畫 */
+        .expand-box {
+            animation: expandHeight 0.4s ease-out forwards;
+            overflow: hidden;
+        }
+        @keyframes expandHeight { from { opacity: 0; transform: scaleY(0.9); transform-origin: top; } to { opacity: 1; transform: scaleY(1); } }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-dna"></i>
+                第四站：原生生物界
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                進度 4/5
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 區塊 1：演化大分流 (五界分類) ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-sitemap"></i> 從原核到真核
+            </h2>
+            <p class="mb-4 text-gray-700">
+                除了原核生物外，其他四界都屬於<strong class="text-[var(--dora-red)]">具有細胞核的真核生物</strong>，其中構造最簡單的就是<strong class="text-[var(--dora-blue)]">原生生物界</strong>。
+            </p>
+
+            <div class="bg-blue-50 p-4 md:p-6 rounded-xl border-2 border-blue-200 mt-6">
+                <h3 class="font-black text-[var(--dora-blue)] mb-2 text-xl"><i class="fa-solid fa-boxes-stacked"></i> Q1 階層分類：五界大安親班</h3>
+                <p class="mb-4 text-sm md:text-base text-gray-700">
+                    回顧五界說，請先將「原核生物」與「真核生物」放入對應特徵的框中，再把「五界」分別放入它們的旗下吧！<br>
+                    <span class="text-sm text-gray-500"><i class="fa-solid fa-hand-pointer"></i> 提示：點擊字卡選取，再點擊目標虛線框放入。放錯會被彈回喔！</span>
+                </p>
+                
+                <!-- 待選字卡區 -->
+                <div id="q1-bank" class="flex flex-wrap justify-center bg-white p-4 rounded-xl border border-gray-300 min-h-[80px] mb-6 shadow-inner">
+                    <!-- JS 動態生成字卡並打亂 -->
+                </div>
+
+                <!-- 分類投放區 -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    
+                    <!-- 原核生物區 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-red-200 flex flex-col">
+                        <div class="bg-red-100 text-red-800 text-center font-bold py-2 rounded-t-lg -mx-4 -mt-4 mb-4 border-b-2 border-red-200">
+                            沒有細胞核
+                        </div>
+                        <!-- L1 框 -->
+                        <div id="zone-l1-pro" class="drop-zone mb-4 border-red-300 bg-red-50/50" data-accept="pro" onclick="handleZoneClick(this, 1)">
+                            <span class="text-sm font-bold text-red-400 pointer-events-none">1. 請先放入總類別</span>
+                        </div>
+                        <!-- L2 框 (初始隱藏) -->
+                        <div id="zone-l2-pro-container" class="hidden-step flex-grow">
+                            <div class="bg-gray-100 text-xs text-center py-1 rounded mb-2 font-bold text-gray-500">包含以下界別：</div>
+                            <div id="zone-l2-pro" class="drop-zone border-red-300 h-24" data-accept="k-pro" onclick="handleZoneClick(this, 2, 'pro')">
+                                <span class="text-sm font-bold text-gray-400 pointer-events-none">2. 放入所屬的界別</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 真核生物區 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-blue-200 flex flex-col">
+                        <div class="bg-blue-100 text-blue-800 text-center font-bold py-2 rounded-t-lg -mx-4 -mt-4 mb-4 border-b-2 border-blue-200">
+                            有細胞核
+                        </div>
+                        <!-- L1 框 -->
+                        <div id="zone-l1-eu" class="drop-zone mb-4 border-blue-300 bg-blue-50/50" data-accept="eu" onclick="handleZoneClick(this, 1)">
+                            <span class="text-sm font-bold text-blue-400 pointer-events-none">1. 請先放入總類別</span>
+                        </div>
+                        <!-- L2 框 (初始隱藏) -->
+                        <div id="zone-l2-eu-container" class="hidden-step flex-grow">
+                            <div class="bg-gray-100 text-xs text-center py-1 rounded mb-2 font-bold text-gray-500">包含以下四個界別：</div>
+                            <div id="zone-l2-eu" class="drop-zone border-blue-300 min-h-[96px]" data-accept="k-eu" onclick="handleZoneClick(this, 2, 'eu')">
+                                <span class="text-sm font-bold text-gray-400 pointer-events-none text-center">2. 放入所屬的界別<br>(共 4 個)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Q1 完成回饋 -->
+                <div id="q1-feedback" class="hidden-step highlight-box mt-6 text-center">
+                    <i class="fa-solid fa-circle-check text-green-600 text-2xl mb-2"></i><br>
+                    五界分類完全正確！生物學家就是這樣根據「細胞核」的有無，將生物做了最基礎的劃分。
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 2：原生生物的營養方式 ================= -->
+        <section id="section-q2" class="card-box hidden-step">
+            <h2 class="section-title">
+                <i class="fa-solid fa-utensils"></i> 原生生物怎麼吃飯？
+            </h2>
+            <p class="mb-4 text-gray-700">
+                原生生物界的生物依照其<strong>營養獲得方式</strong>的不同，可分成三大類：藻類、原生動物和原生菌類。
+            </p>
+
+            <div class="bg-yellow-50 p-4 md:p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-4">
+                <p class="font-bold mb-4">Q2：請根據課文，為下列三類原生生物選擇正確的營養方式：</p>
+                
+                <div class="grid md:grid-cols-3 gap-6 text-center mb-6">
+                    <!-- 藻類 -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic11.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/8BC34A/FFF?text=藻類(CLpic11)'">
+                        <h4 class="font-black text-[var(--dora-blue)] mb-2">藻類</h4>
+                        <select id="nutri-1" class="w-full p-2 border-2 border-[var(--dora-blue)] text-sm md:text-base font-bold rounded-lg focus:outline-none bg-gray-50">
+                            <option value="">選擇營養方式...</option>
+                            <option value="photo">可行光合作用自行製造養分</option>
+                            <option value="eat">以攝食維生</option>
+                            <option value="decompose">以分解物質維生</option>
+                        </select>
+                    </div>
+
+                    <!-- 原生動物 -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic12.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/FF9800/FFF?text=原生動物(CLpic12)'">
+                        <h4 class="font-black text-[var(--dora-blue)] mb-2">原生動物</h4>
+                        <select id="nutri-2" class="w-full p-2 border-2 border-[var(--dora-blue)] text-sm md:text-base font-bold rounded-lg focus:outline-none bg-gray-50">
+                            <option value="">選擇營養方式...</option>
+                            <option value="photo">可行光合作用自行製造養分</option>
+                            <option value="eat">以攝食維生</option>
+                            <option value="decompose">以分解物質維生</option>
+                        </select>
+                    </div>
+
+                    <!-- 原生菌類 -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic13.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/9E9E9E/FFF?text=原生菌類(CLpic13)'">
+                        <h4 class="font-black text-[var(--dora-blue)] mb-2">原生菌類</h4>
+                        <select id="nutri-3" class="w-full p-2 border-2 border-[var(--dora-blue)] text-sm md:text-base font-bold rounded-lg focus:outline-none bg-gray-50">
+                            <option value="">選擇營養方式...</option>
+                            <option value="photo">可行光合作用自行製造養分</option>
+                            <option value="eat">以攝食維生</option>
+                            <option value="decompose">以分解物質維生</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn-action w-full md:w-auto" onclick="checkQ2()"><i class="fa-solid fa-check"></i> 確認配對</button>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 3：知識快遞 - 眼蟲 ================= -->
+        <section id="section-q3" class="card-box hidden-step">
+            <h2 class="section-title">
+                <i class="fa-solid fa-truck-fast"></i> 知識快遞：奇妙的眼蟲
+            </h2>
+            <div class="flex flex-col md:flex-row gap-6 items-center mb-6">
+                <p class="flex-1 text-gray-700">
+                    原生生物中的<strong class="text-[var(--dora-red)]">眼蟲</strong>十分特別，牠具有葉綠體，但沒有細胞壁，以鞭毛運動，是一種兼具動、植物細胞特徵的原生生物。眼蟲可直接自外界<strong>攝取養分</strong>維生，也可在有光的環境中行<strong>光合作用</strong>，自行製造葡萄糖。
+                </p>
+                <div class="flex-shrink-0 relative">
+                    <img src="CLpic14.png" alt="眼蟲" class="w-48 h-auto object-cover rounded-xl shadow-md border-4 border-white" onerror="this.src='https://placehold.co/200x150/4CAF50/FFF?text=眼蟲(CLpic14)'">
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 md:p-6 rounded-xl border-2 border-green-300 mt-4">
+                <p class="font-bold mb-4">Q3：根據眼蟲的介紹，眼蟲具有什麼特徵呢？（多選）</p>
+                
+                <div class="flex flex-col gap-3 mb-6">
+                    <label class="check-item !border-green-200">
+                        <input type="checkbox" class="q3-check" data-ans="true" data-type="photo"> 
+                        跟藻類一樣可以行光合作用
+                    </label>
+                    <label class="check-item !border-green-200">
+                        <input type="checkbox" class="q3-check" data-ans="true" data-type="move"> 
+                        跟原生動物一樣可以自由移動
+                    </label>
+                    <label class="check-item !border-green-200">
+                        <input type="checkbox" class="q3-check" data-ans="false" data-type="trap"> 
+                        跟原生菌類一樣可以從外界攝取養分
+                    </label>
+                </div>
+                
+                <button class="btn-action w-full md:w-auto !bg-green-600 !shadow-[0_4px_0_#2E7D32]" onclick="checkQ3()">
+                    <i class="fa-solid fa-magnifying-glass"></i> 確認特徵
+                </button>
+                
+                <div id="q3-feedback" class="hidden-step highlight-box !bg-green-100 !border-green-500 mt-4 text-green-800"></div>
+            </div>
+        </section>
+
+
+        <!-- ================= 下一頁按鈕 ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成所有測驗解鎖任意門
+            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLuuhni07wuhfnq.html" class="btn-red animate-bounce no-underline">
+                <i class="fa-solid fa-door-open text-3xl"></i>
+                使用任意門前往下一站
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600 whitespace-pre-line"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        // 總進度控管
+        let progress = { q1: false, q2: false, q3: false };
+
+        function checkProgress() {
+            if (progress.q1) {
+                document.getElementById('section-q2').style.display = 'block';
+            }
+            if (progress.q2) {
+                document.getElementById('section-q3').style.display = 'block';
+            }
+            if (progress.q1 && progress.q2 && progress.q3) {
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+                // 捲動到最底
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 300);
+            }
+        }
+
+        // Toast 提示系統
+        function showToast(isSuccess, titleMsg, descMsg) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fa-solid fa-face-smile-wink text-[var(--dora-blue)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-blue)]">${titleMsg || '叮咚！太棒了！'}</span>`;
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-[var(--dora-red)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-red)]">${titleMsg || '哎呀！再想想看喔'}</span>`;
+            }
+            msg.innerText = descMsg;
+            modal.style.display = 'flex';
+        }
+        function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
+
+
+        // ================= Q1 階層分類邏輯 =================
+        const q1CardsData = [
+            { id: 'pro', text: '原核生物', type: 'L1' },
+            { id: 'eu', text: '真核生物', type: 'L1' },
+            { id: 'k-pro', text: '原核生物界', type: 'L2_pro' },
+            { id: 'k-proti', text: '原生生物界', type: 'L2_eu' },
+            { id: 'k-fungi', text: '真菌界', type: 'L2_eu' },
+            { id: 'k-plantae', text: '植物界', type: 'L2_eu' },
+            { id: 'k-animalia', text: '動物界', type: 'L2_eu' }
+        ];
+
+        let activeCard = null;
+        let q1Placed = { l1_pro: false, l1_eu: false, l2_pro_count: 0, l2_eu_count: 0 };
+
+        // 初始化打亂並生成字卡
+        function initQ1() {
+            const bank = document.getElementById('q1-bank');
+            const shuffled = [...q1CardsData].sort(() => Math.random() - 0.5);
+            shuffled.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'bac-card';
+                div.innerText = c.text;
+                div.setAttribute('data-id', c.id);
+                div.setAttribute('data-type', c.type);
+                div.onclick = () => handleCardClick(div);
+                bank.appendChild(div);
+            });
+        }
+
+        function handleCardClick(card) {
+            // 如果卡片已經在框內，點擊使其退回題庫
+            if (card.parentElement.id !== 'q1-bank') {
+                const zone = card.parentElement;
+                document.getElementById('q1-bank').appendChild(card);
+                
+                // 更新狀態
+                if (zone.id === 'zone-l1-pro') {
+                    q1Placed.l1_pro = false;
+                    document.getElementById('zone-l2-pro-container').style.display = 'none';
+                    if(!zone.querySelector('.placeholder-text')) zone.innerHTML = '<span class="text-sm font-bold text-red-400 pointer-events-none placeholder-text">1. 請先放入總類別</span>';
+                } else if (zone.id === 'zone-l1-eu') {
+                    q1Placed.l1_eu = false;
+                    document.getElementById('zone-l2-eu-container').style.display = 'none';
+                    if(!zone.querySelector('.placeholder-text')) zone.innerHTML = '<span class="text-sm font-bold text-blue-400 pointer-events-none placeholder-text">1. 請先放入總類別</span>';
+                } else if (zone.id === 'zone-l2-pro') {
+                    q1Placed.l2_pro_count--;
+                    if(q1Placed.l2_pro_count === 0) zone.innerHTML = '<span class="text-sm font-bold text-gray-400 pointer-events-none placeholder-text">2. 放入所屬的界別</span>';
+                } else if (zone.id === 'zone-l2-eu') {
+                    q1Placed.l2_eu_count--;
+                    if(q1Placed.l2_eu_count === 0) zone.innerHTML = '<span class="text-sm font-bold text-gray-400 pointer-events-none text-center placeholder-text">2. 放入所屬的界別<br>(共 4 個)</span>';
+                }
+                checkQ1Complete();
+                return;
+            }
+
+            // 選取或取消選取題庫中的卡片
+            if (activeCard === card) {
+                card.classList.remove('selected');
+                activeCard = null;
+            } else {
+                if (activeCard) activeCard.classList.remove('selected');
+                card.classList.add('selected');
+                activeCard = card;
+            }
+        }
+
+        function handleZoneClick(zone, level, zoneType = null) {
+            if (!activeCard) return;
+
+            const cardId = activeCard.getAttribute('data-id');
+            const cardType = activeCard.getAttribute('data-type');
+            const acceptId = zone.getAttribute('data-accept'); // pro, eu, k-pro, k-eu
+
+            // 規則檢查
+            if (level === 1) {
+                if (cardType !== 'L1') {
+                    showToast(false, '順序錯誤', '必須先放入「總類別（原核/真核生物）」，才能放底下的界喔！');
+                    return;
+                }
+                if (cardId !== acceptId) {
+                    showToast(false, '放錯邊了', acceptId === 'pro' ? '這格是「沒有細胞核」的分類喔！' : '這格是「有細胞核」的分類喔！');
+                    return;
+                }
+            } else if (level === 2) {
+                if (cardType === 'L1') {
+                    showToast(false, '層級錯誤', '總類別不能放在這裡喔！');
+                    return;
+                }
+                
+                // 檢查是否符合原核或真核界別
+                if (zoneType === 'pro' && cardType !== 'L2_pro') {
+                    showToast(false, '分類錯誤', '這個界別是有細胞核的真核生物，不能放這裡！');
+                    return;
+                }
+                if (zoneType === 'eu' && cardType !== 'L2_eu') {
+                    showToast(false, '分類錯誤', '原核生物界沒有細胞核，不能放在真核生物區！');
+                    return;
+                }
+            }
+
+            // 放置成功處理
+            // 如果是 L1，只能放一張，先把舊的退回
+            if (level === 1) {
+                const existingCard = zone.querySelector('.bac-card');
+                if (existingCard) document.getElementById('q1-bank').appendChild(existingCard);
+                zone.innerHTML = ''; 
+            } else {
+                // 清除提示字
+                const placeholder = zone.querySelector('.placeholder-text');
+                if (placeholder) placeholder.remove();
+            }
+
+            zone.appendChild(activeCard);
+            activeCard.classList.remove('selected');
+            
+            // 更新狀態與展開下一層
+            if (level === 1) {
+                if (cardId === 'pro') {
+                    q1Placed.l1_pro = true;
+                    document.getElementById('zone-l2-pro-container').style.display = 'block';
+                } else if (cardId === 'eu') {
+                    q1Placed.l1_eu = true;
+                    document.getElementById('zone-l2-eu-container').style.display = 'block';
+                }
+            } else if (level === 2) {
+                if (zoneType === 'pro') q1Placed.l2_pro_count++;
+                if (zoneType === 'eu') q1Placed.l2_eu_count++;
+            }
+
+            activeCard = null;
+            checkQ1Complete();
+        }
+
+        function checkQ1Complete() {
+            const bankCount = document.getElementById('q1-bank').querySelectorAll('.bac-card').length;
+            if (bankCount === 0 && q1Placed.l1_pro && q1Placed.l1_eu && q1Placed.l2_pro_count === 1 && q1Placed.l2_eu_count === 4) {
+                document.getElementById('q1-feedback').style.display = 'block';
+                progress.q1 = true;
+                checkProgress();
+            } else {
+                document.getElementById('q1-feedback').style.display = 'none';
+                progress.q1 = false;
+            }
+        }
+
+
+        // ================= Q2 營養配對邏輯 =================
+        function checkQ2() {
+            const a1 = document.getElementById('nutri-1').value; // 藻類
+            const a2 = document.getElementById('nutri-2').value; // 原生動物
+            const a3 = document.getElementById('nutri-3').value; // 原生菌類
+
+            if (!a1 || !a2 || !a3) {
+                showToast(false, '尚未完成', '請為三種生物都選擇一種營養方式喔！');
+                return;
+            }
+
+            if (a1 === 'photo' && a2 === 'eat' && a3 === 'decompose') {
+                showToast(true, '配對成功！', '很棒！\n藻類：光合作用製造養分\n原生動物：攝食維生\n原生菌類：分解物質維生');
+                progress.q2 = true;
+                checkProgress();
+                
+                // 鎖定選單並變更外觀
+                ['nutri-1', 'nutri-2', 'nutri-3'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.disabled = true;
+                    el.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                });
+            } else {
+                showToast(false, '配對有錯', '提示：\n「藻」像植物會行光合作用\n「動物」通常是用吃的(攝食)\n「菌」通常扮演分解者的角色');
+            }
+        }
+
+
+        // ================= Q3 眼蟲特徵邏輯 =================
+        function checkQ3() {
+            const cbs = document.querySelectorAll('.q3-check');
+            let isCorrect = true;
+            let trapChecked = false;
+
+            cbs.forEach(cb => {
+                const expectChecked = cb.getAttribute('data-ans') === 'true';
+                const isTrap = cb.getAttribute('data-type') === 'trap';
+                
+                if (cb.checked && isTrap) trapChecked = true;
+                if (cb.checked !== expectChecked) isCorrect = false;
+            });
+
+            if (isCorrect) {
+                document.getElementById('q3-feedback').innerHTML = '<i class="fa-solid fa-star text-yellow-500"></i> 完全正確！眼蟲兼具植物（光合作用）與動物（自由移動、直接攝食）的特徵，是非常獨特的原生生物！';
+                document.getElementById('q3-feedback').style.display = 'block';
+                progress.q3 = true;
+                checkProgress();
+            } else {
+                if (trapChecked) {
+                    // 專屬陷阱提示
+                    showToast(false, '小心陷阱喔！', '眼蟲可以直接自外界「攝取養分（攝食）」，這比較像「原生動物」喔！\n而「原生菌類」則是以分泌酵素「分解物質」來維生，兩者獲取養分的方式不太一樣。請再調整一下勾選項！');
+                } else {
+                    showToast(false, '特徵有漏喔', '眼蟲兼具動、植物細胞特徵，既能光合作用也能自由移動，請把它具備的特徵都勾選起來！');
+                }
+            }
+        }
+
+        // 啟動初始化
+        window.onload = initQ1;
+
+    </script>
+</body>
+</html>

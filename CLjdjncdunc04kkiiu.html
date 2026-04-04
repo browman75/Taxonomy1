@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第三站：行光合作用的菌？</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 卡片共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
+        /* 互動按鈕樣式 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
+            color: white;
+            border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        .hidden-step { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        /* 勾選題客製化 (預設藍色風格) */
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: var(--dora-blue);
+        }
+        .check-item:hover { background: #e0f2fe; }
+        .check-item input { width: 24px; height: 24px; margin-right: 12px; accent-color: var(--dora-blue); }
+
+        /* 字卡與配對區樣式 (階層分類題) */
+        .bac-card {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 18px;
+        }
+        .bac-card:active { transform: scale(0.95); }
+        .bac-card.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        
+        .drop-zone { 
+            min-height: 50px; background-color: rgba(255,255,255,0.7); 
+            border: 2px dashed #9ca3af; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; transition: all 0.2s; cursor: pointer;
+        }
+        .drop-zone:hover { background-color: #f3f4f6; }
+        .drop-zone .bac-card {
+            width: 100%; margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent;
+        }
+
+        /* 提示彈跳視窗 */
+        #toast-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center;
+        }
+        .toast-content {
+            background: white; padding: 32px; border-radius: 24px; text-align: center;
+            max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 階層框展開動畫 */
+        .expand-box {
+            animation: expandHeight 0.4s ease-out forwards;
+            overflow: hidden;
+        }
+        @keyframes expandHeight { from { opacity: 0; transform: scaleY(0.9); transform-origin: top; } to { opacity: 1; transform: scaleY(1); } }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-sun"></i>
+                第三站：行光合作用的菌？
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                進度 3/4
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 區塊 1：藍綠菌介紹 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-leaf"></i> 可行光合作用的細菌―藍綠菌
+            </h2>
+            <p class="mb-4 text-gray-700">
+                另外有些原核生物細胞內雖不含葉綠體，但含有<strong>葉綠素</strong>和其他色素，可吸收光能進行<strong>光合作用</strong>製造葡萄糖，例如 <span class="text-[var(--dora-red)] font-bold">藍綠菌</span>（又稱藍綠藻、藍菌）。
+            </p>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <!-- Q1 稱呼通用性 -->
+                <p class="font-bold mb-3">Q1：下列哪些名詞與「藍綠菌」是通用的同義詞？（多選）</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-lg">
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="true"> 藍綠菌</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="false"> 細菌</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="false"> 原核生物</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="true"> 藍綠藻</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="true"> 藍菌</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="false"> 海藻</label>
+                    <label class="check-item"><input type="checkbox" class="q1-check" data-ans="false"> 藍綠菇</label>
+                </div>
+                <button class="btn-action w-full md:w-auto" onclick="checkQ1()"><i class="fa-solid fa-check"></i> 確認同義詞</button>
+
+                <!-- Q2 特徵勾選 -->
+                <div id="q2-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6 mt-6">
+                    <p class="font-bold mb-3">Q2：請勾選出「藍綠菌」具有的所有特徵：</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 text-lg">
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="光合"> 可行光合作用</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="呼吸"> 可行呼吸作用</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="葉綠素"> 有葉綠素</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="葉綠體"> 有葉綠體</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="細胞核"> 有細胞核</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="遺傳物質"> 有遺傳物質</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="細菌"> 屬於狹義的細菌</label>
+                        <label class="check-item"><input type="checkbox" class="q2-check" data-val="原核生物"> 屬於原核生物</label>
+                    </div>
+                    <button class="btn-action w-full md:w-auto" onclick="checkQ2()"><i class="fa-solid fa-magnifying-glass"></i> 確認特徵</button>
+                    
+                    <div id="q2-feedback" class="hidden-step highlight-box mt-4"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 2：種類配對與光合作用 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-images"></i> 藍綠菌家族大集合
+            </h2>
+            <p class="mb-4 text-gray-700">藍綠菌有許多不同的種類與外觀，請根據課本描述進行配對！</p>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <!-- Q3 圖文配對 -->
+                <p class="font-bold mb-4">Q3：請為下方的藍綠菌圖片選擇正確的名稱：</p>
+                <div class="grid md:grid-cols-3 gap-6 text-center mb-6">
+                    
+                    <!-- 圖片 1 (顫藻) -> 故意打亂預設順序 -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic08.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/FFF/666?text=CLpic08(絲狀)'">
+                        <p class="text-sm text-gray-500 mb-2 h-10">左右擺動或滑動運動，會顫動的絲狀藻</p>
+                        <select id="alg-match-1" class="w-full p-2 border-2 border-[var(--dora-blue)] text-[var(--dora-blue)] font-bold rounded-lg focus:outline-none">
+                            <option value="">選擇名稱...</option>
+                            <option value="念珠藻">念珠藻</option><option value="色球藻">色球藻</option><option value="顫藻">顫藻</option>
+                        </select>
+                    </div>
+
+                    <!-- 圖片 2 (念珠藻) -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic09.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/FFF/666?text=CLpic09(串珠狀)'">
+                        <p class="text-sm text-gray-500 mb-2 h-10">細胞呈現珠狀排列，像一串珠子</p>
+                        <select id="alg-match-2" class="w-full p-2 border-2 border-[var(--dora-blue)] text-[var(--dora-blue)] font-bold rounded-lg focus:outline-none">
+                            <option value="">選擇名稱...</option>
+                            <option value="念珠藻">念珠藻</option><option value="色球藻">色球藻</option><option value="顫藻">顫藻</option>
+                        </select>
+                    </div>
+
+                    <!-- 圖片 3 (色球藻) -->
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                        <img src="CLpic07.png" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://placehold.co/200x150/FFF/666?text=CLpic07(球狀)'">
+                        <p class="text-sm text-gray-500 mb-2 h-10">外觀球形，外面包覆有色膠質外層</p>
+                        <select id="alg-match-3" class="w-full p-2 border-2 border-[var(--dora-blue)] text-[var(--dora-blue)] font-bold rounded-lg focus:outline-none">
+                            <option value="">選擇名稱...</option>
+                            <option value="念珠藻">念珠藻</option><option value="色球藻">色球藻</option><option value="顫藻">顫藻</option>
+                        </select>
+                    </div>
+
+                </div>
+                <button class="btn-action w-full md:w-auto mb-6" onclick="checkQ3()"><i class="fa-solid fa-check"></i> 確認配對</button>
+
+                <!-- Q4 誰會光合作用 -->
+                <div id="q4-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6">
+                    <p class="font-bold mb-3">Q4：綜合以上知識，下列哪些生物可以行光合作用呢？（多選）</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-base">
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="true"> 念珠藻</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="false"> 冷水澡</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="true"> 色球藻</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="false"> 金黃色葡萄球菌</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="true"> 藍綠菌</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="false"> 大腸桿菌</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="true"> 顫藻</label>
+                        <label class="check-item"><input type="checkbox" class="q4-check" data-ans="false"> 一大早</label>
+                    </div>
+                    <button class="btn-action w-full md:w-auto" onclick="checkQ4()"><i class="fa-solid fa-sun"></i> 確認光合生物</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 3：生活應用與綜合大考驗 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-utensils"></i> 雨後冒出的美味：雨來菇
+            </h2>
+            <div class="flex flex-col md:flex-row gap-6 items-center mb-6">
+                <p class="flex-1 text-gray-700">
+                    「雨來菇」是一種可食用的藍綠菌，其實它是<strong class="text-[var(--dora-blue)]">念珠藻的集合體</strong>。它們常在雨後短暫出現，因為長得像是菇類（真菌），才被俗稱為雨來菇，是一道常見且營養的在地食材喔！
+                </p>
+                <div class="flex-shrink-0 relative">
+                    <img src="CLpic10.png" alt="雨來菇" class="w-48 h-auto object-cover rounded-xl shadow-md border-4 border-white" onerror="this.src='https://placehold.co/200x150/4CAF50/FFF?text=雨來菇(CLpic10)'">
+                </div>
+            </div>
+
+            <!-- Q5 俄羅斯娃娃階層分類 -->
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <h3 class="font-black text-[var(--dora-red)] mb-2 text-xl"><i class="fa-solid fa-boxes-stacked"></i> Q5 綜合評量：階層分類俄羅斯娃娃</h3>
+                <p class="mb-4 text-sm md:text-base text-gray-700">
+                    請將下方的生物字卡點選並放入框中！<br>
+                    <strong>規則：</strong>大包小！必須<span class="text-[var(--dora-red)]">先放入最大的分類階層（界別）</span>，接著放「類別」，最後才能放入「特定生物」喔！放錯順序會被彈回。
+                </p>
+                
+                <!-- 待選字卡區 -->
+                <div id="hierarchy-bank" class="flex flex-wrap gap-2 p-4 bg-white rounded-xl border border-gray-300 min-h-[80px] mb-6 shadow-inner justify-center">
+                    <div class="bac-card" data-id="L1_prokaryote" onclick="handleHCardClick(this)">原核生物界</div>
+                    <div class="bac-card" data-id="L2_bacteria" onclick="handleHCardClick(this)">細菌</div>
+                    <div class="bac-card" data-id="L2_cyanobacteria" onclick="handleHCardClick(this)">藍綠菌</div>
+                    <div class="bac-card" data-id="L3_lacto" onclick="handleHCardClick(this)">乳酸桿菌</div>
+                    <div class="bac-card" data-id="L3_rumen" onclick="handleHCardClick(this)">瘤胃球菌</div>
+                    <div class="bac-card" data-id="L3_nostoc" onclick="handleHCardClick(this)">念珠藻</div>
+                    <div class="bac-card" data-id="L3_yulaigu" onclick="handleHCardClick(this)">雨來菇</div>
+                </div>
+
+                <!-- 分類投放區 (UI動態展開) -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-h-[200px]">
+                    <p class="font-bold text-gray-400 text-center mb-4">⬇️ 請依序點擊上方字卡，放入下方的對應階層 ⬇️</p>
+                    
+                    <!-- Layer 1 Zone -->
+                    <div id="zone-L1" class="drop-zone border-4 border-blue-300 bg-blue-50 w-full mb-4 relative" data-accept="L1_prokaryote" onclick="handleHZoneClick(this, 1)">
+                        <span class="placeholder-text text-blue-400 font-bold">第一層：請放入最大的「界」</span>
+                    </div>
+
+                    <!-- Layer 2 Zones (隱藏，等L1放入後顯示) -->
+                    <div id="layer2-container" class="hidden-step expand-box w-full p-4 border-4 border-[var(--dora-blue)] rounded-xl relative mt-[-10px] bg-blue-50/30">
+                        <span class="absolute -top-3 left-4 bg-[var(--dora-blue)] text-white text-xs px-2 py-1 rounded font-bold">原核生物界</span>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mt-2">
+                            <!-- 細菌分類 -->
+                            <div class="bg-white p-3 rounded-lg border-2 border-red-300">
+                                <div id="zone-L2-bac" class="drop-zone w-full mb-3" data-accept="L2_bacteria" onclick="handleHZoneClick(this, 2)">
+                                    <span class="placeholder-text text-red-400 text-sm font-bold">第二層：請放入類群</span>
+                                </div>
+                                <!-- Layer 3 細菌成員 -->
+                                <div id="layer3-bac-container" class="hidden-step expand-box flex flex-col gap-2 mt-[-5px] p-2 border-2 border-dashed border-red-200 rounded bg-red-50">
+                                    <span class="text-xs text-red-500 font-bold text-center">底下包含的特定生物：</span>
+                                    <div class="drop-zone w-full h-12" data-accept="L3_bac" onclick="handleHZoneClick(this, 3, 'bac')"></div>
+                                    <div class="drop-zone w-full h-12" data-accept="L3_bac" onclick="handleHZoneClick(this, 3, 'bac')"></div>
+                                </div>
+                            </div>
+
+                            <!-- 藍綠菌分類 -->
+                            <div class="bg-white p-3 rounded-lg border-2 border-green-300">
+                                <div id="zone-L2-cya" class="drop-zone w-full mb-3" data-accept="L2_cyanobacteria" onclick="handleHZoneClick(this, 2)">
+                                    <span class="placeholder-text text-green-500 text-sm font-bold">第二層：請放入類群</span>
+                                </div>
+                                <!-- Layer 3 藍綠菌成員 -->
+                                <div id="layer3-cya-container" class="hidden-step expand-box flex flex-col gap-2 mt-[-5px] p-2 border-2 border-dashed border-green-200 rounded bg-green-50">
+                                    <span class="text-xs text-green-600 font-bold text-center">底下包含的特定生物：</span>
+                                    <div class="drop-zone w-full h-12" data-accept="L3_cya" onclick="handleHZoneClick(this, 3, 'cya')"></div>
+                                    <div class="drop-zone w-full h-12" data-accept="L3_cya" onclick="handleHZoneClick(this, 3, 'cya')"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 隱藏的成功訊息 -->
+                <div id="q5-feedback" class="hidden-step highlight-box mt-6">
+                    <i class="fa-solid fa-trophy text-[var(--dora-yellow)] text-xl mb-2"></i><br>
+                    <strong>分類完全正確！太強了！</strong><br>
+                    透過這個圖表，你已經完全掌握「原核生物界」的從屬關係囉！
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 4：重點整理 ================= -->
+        <section class="highlight-box bg-[#E8F6FC] border-[var(--dora-blue)] border-l-8 rounded-xl p-6 mb-12 shadow-md">
+            <h2 class="text-2xl font-black text-[var(--dora-blue)] mb-4">
+                <i class="fa-solid fa-thumbtack"></i> 第三站重點整理
+            </h2>
+            <ul class="list-disc list-inside space-y-3 font-bold text-lg text-gray-800">
+                <li><strong>細胞特徵：</strong>無葉綠體、無細胞核，但含有<span class="text-[var(--dora-red)]">葉綠素</span>與遺傳物質，可行光合作用。</li>
+                <li><strong>通用名稱：</strong>藍綠菌 ＝ 藍綠藻 ＝ 藍菌。</li>
+                <li><strong>常見種類：</strong>
+                    <ul class="list-circle list-inside ml-8 mt-1 text-gray-700 font-normal">
+                        <li>色球藻（球狀，有色膠質外層）</li>
+                        <li>顫藻（絲狀，會顫動滑行）</li>
+                        <li>念珠藻（珠狀排列）</li>
+                    </ul>
+                </li>
+                <li><strong>生活應用：</strong><span class="text-[var(--dora-red)] font-bold">雨來菇</span>是念珠藻的集合體，外型像菇類（真菌），但其實是可食用的藍綠菌。</li>
+                <li><strong>生物階層：</strong>原核生物界主要包含「細菌」與「藍綠菌」兩大類別。</li>
+            </ul>
+        </section>
+
+        <!-- ================= 下一頁按鈕 ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成所有測驗解鎖任意門
+            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLjdjnyyflec05jye.html" class="btn-red animate-bounce no-underline">
+                <i class="fa-solid fa-door-open text-3xl"></i>
+                使用任意門前往下一站
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        let progress = { q1: false, q2: false, q3: false, q4: false, q5: false };
+
+        function checkProgress() {
+            if (Object.values(progress).every(v => v === true)) {
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+            }
+        }
+
+        // Toast 提示
+        function showToast(isSuccess, titleMsg, descMsg) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fa-solid fa-face-smile-wink text-[var(--dora-blue)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-blue)]">${titleMsg || '叮咚！太棒了！'}</span>`;
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-[var(--dora-red)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-red)]">${titleMsg || '哎呀！再想想看喔'}</span>`;
+            }
+            msg.innerText = descMsg;
+            modal.style.display = 'flex';
+        }
+        function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
+
+        // Q1 通用名詞
+        function checkQ1() {
+            const cbs = document.querySelectorAll('.q1-check');
+            let isCorrect = true;
+            cbs.forEach(cb => {
+                const expectChecked = cb.getAttribute('data-ans') === 'true';
+                if (cb.checked !== expectChecked) isCorrect = false;
+            });
+
+            if (isCorrect) {
+                showToast(true, '觀念正確！', '藍綠菌、藍綠藻、藍菌，這三個名詞指的都是同樣的原核生物喔！');
+                document.getElementById('q2-container').style.display = 'block';
+                progress.q1 = true;
+                checkProgress();
+            } else {
+                showToast(false, '有選錯喔！', '提示：有三個選項是通用的（都有「藍」字），而「原核生物」範圍太大，不能當作同義詞喔！');
+            }
+        }
+
+        // Q2 特徵勾選
+        function checkQ2() {
+            const cbs = document.querySelectorAll('.q2-check');
+            const expected = ['光合', '呼吸', '葉綠素', '遺傳物質', '原核生物'];
+            const wrongChecks = [];
+            const missingChecks = [];
+
+            cbs.forEach(cb => {
+                const val = cb.getAttribute('data-val');
+                const isExpected = expected.includes(val);
+                if (cb.checked && !isExpected) wrongChecks.push(val);
+                if (!cb.checked && isExpected) missingChecks.push(val);
+            });
+
+            if (wrongChecks.length === 0 && missingChecks.length === 0) {
+                showToast(true, '特徵全對！', '藍綠菌雖然沒有葉綠體、細胞核，但有葉綠素可以行光合作用，而且是獨立於一般細菌外的原核生物喔！');
+                document.getElementById('q2-feedback').innerHTML = '<i class="fa-solid fa-check-circle text-green-600"></i> 完全正確！進入下一區塊吧！';
+                document.getElementById('q2-feedback').style.display = 'block';
+                progress.q2 = true;
+                checkProgress();
+            } else {
+                // 給予對應提示
+                let hintMsg = '';
+                if (wrongChecks.includes('葉綠體')) hintMsg = '藍綠菌是原核生物，構造簡單，沒有「葉綠體」這種複雜胞器喔（但有葉綠素）！';
+                else if (wrongChecks.includes('細胞核')) hintMsg = '原核生物的特徵就是沒有核膜，所以沒有真正的「細胞核」！';
+                else if (wrongChecks.includes('細菌')) hintMsg = '在國中分類裡，藍綠菌雖然名字有菌，但它們跟一般「細菌」是同屬原核生物界的並列關係喔！';
+                else if (missingChecks.length > 0) hintMsg = '你少勾了一些正確特徵喔！只要是生物都會呼吸、有遺傳物質，而且藍綠菌是「原核生物界」的大明星！';
+                
+                showToast(false, '特徵有誤', hintMsg);
+            }
+        }
+
+        // Q3 圖文配對
+        function checkQ3() {
+            // 注意我故意打亂了 HTML 裡的圖順序 (08顫藻, 09念珠藻, 07色球藻)
+            const ans1 = document.getElementById('alg-match-1').value; // 顫藻
+            const ans2 = document.getElementById('alg-match-2').value; // 念珠藻
+            const ans3 = document.getElementById('alg-match-3').value; // 色球藻
+
+            if (!ans1 || !ans2 || !ans3) {
+                showToast(false, '尚未完成', '請為三張圖片都選出一個名字喔！');
+                return;
+            }
+
+            if (ans1 === '顫藻' && ans2 === '念珠藻' && ans3 === '色球藻') {
+                showToast(true, '配對成功！', '很棒！這就是藍綠藻家族常見的三個成員。');
+                document.getElementById('q4-container').style.display = 'block';
+                progress.q3 = true;
+                checkProgress();
+            } else {
+                showToast(false, '配對有錯', '提示：\n圖1 絲狀(顫藻)\n圖2 串珠狀(念珠藻)\n圖3 球狀(色球藻)');
+            }
+        }
+
+        // Q4 光合作用多選
+        function checkQ4() {
+            const cbs = document.querySelectorAll('.q4-check');
+            let isCorrect = true;
+            cbs.forEach(cb => {
+                if (cb.checked !== (cb.getAttribute('data-ans') === 'true')) isCorrect = false;
+            });
+
+            if (isCorrect) {
+                showToast(true, '辨識成功', '沒錯！色球藻、顫藻、念珠藻都是藍綠菌的一種，它們含有葉綠素，都能行光合作用。');
+                progress.q4 = true;
+                checkProgress();
+            } else {
+                showToast(false, '有選錯喔', '提示：剛剛介紹過的三種藻類，以及「藍綠菌」本尊都能光合作用。注意不要選到搞笑選項或一般細菌(如大腸桿菌)喔！');
+            }
+        }
+
+        // Q5 俄羅斯娃娃階層分類
+        let activeHCard = null;
+        // 定義每一層完成需要收集的數量
+        let l3BacCount = 0;
+        let l3CyaCount = 0;
+
+        function handleHCardClick(card) {
+            if (card.parentElement.id === 'hierarchy-bank') {
+                if (activeHCard === card) { 
+                    card.classList.remove('selected'); activeHCard = null; 
+                } else {
+                    if (activeHCard) activeHCard.classList.remove('selected');
+                    card.classList.add('selected'); activeHCard = card;
+                }
+            } else {
+                // 如果已經放入格子，點擊可退回題庫
+                const zone = card.parentElement;
+                document.getElementById('hierarchy-bank').appendChild(card);
+                
+                // 處理退回時的狀態恢復
+                if (zone.id === 'zone-L1') {
+                    document.getElementById('layer2-container').style.display = 'none';
+                    zone.innerHTML = '<span class="placeholder-text text-blue-400 font-bold">第一層：請放入最大的「界」</span>';
+                    zone.classList.remove('border-none', 'p-0');
+                    zone.classList.add('p-4');
+                } else if (zone.id === 'zone-L2-bac') {
+                    document.getElementById('layer3-bac-container').style.display = 'none';
+                    zone.innerHTML = '<span class="placeholder-text text-red-400 text-sm font-bold">第二層：請放入類群</span>';
+                } else if (zone.id === 'zone-L2-cya') {
+                    document.getElementById('layer3-cya-container').style.display = 'none';
+                    zone.innerHTML = '<span class="placeholder-text text-green-500 text-sm font-bold">第二層：請放入類群</span>';
+                } else if (zone.getAttribute('data-accept') === 'L3_bac') {
+                    l3BacCount--;
+                } else if (zone.getAttribute('data-accept') === 'L3_cya') {
+                    l3CyaCount--;
+                }
+                
+                // 退回時重新檢查進度
+                checkQ5Complete();
+            }
+        }
+
+        function handleHZoneClick(zone, expectedLevel, specificType = null) {
+            if (!activeHCard) return;
+
+            const cardId = activeHCard.getAttribute('data-id');
+            const acceptType = zone.getAttribute('data-accept');
+
+            // 1. 檢查是否符合當前階層
+            if (expectedLevel === 1 && acceptType !== cardId) {
+                showToast(false, '彈回！順序錯誤', '俄羅斯娃娃要從最大的開始裝喔！請先找出「最大分類（界）」的字卡。');
+                return;
+            }
+            if (expectedLevel === 2 && acceptType !== cardId) {
+                // L2 點錯 (例如拿了L3的牌去放L2的格子)
+                if (cardId.startsWith('L3')) showToast(false, '彈回！', '這是特定的生物種，請先完成第二層的「類別」喔！');
+                else showToast(false, '彈回！', '這個類別放錯邊囉！');
+                return;
+            }
+            if (expectedLevel === 3) {
+                // L3 點錯
+                if (cardId.startsWith('L2') || cardId.startsWith('L1')) {
+                    showToast(false, '彈回！', '這個階層太高了，這裡只能放特定生物喔！'); return;
+                }
+                
+                const isBac = ['L3_lacto', 'L3_rumen'].includes(cardId);
+                const isCya = ['L3_nostoc', 'L3_yulaigu'].includes(cardId);
+                
+                if (specificType === 'bac' && !isBac) {
+                    showToast(false, '彈回！分類錯誤', '這個生物不屬於細菌喔！（雨來菇、念珠藻是藍綠菌）'); return;
+                }
+                if (specificType === 'cya' && !isCya) {
+                    showToast(false, '彈回！分類錯誤', '這個生物不屬於藍綠菌喔！（乳酸桿菌、瘤胃球菌是一般細菌）'); return;
+                }
+            }
+
+            // --- 放置成功邏輯 ---
+            
+            // 如果格子裡已經有卡片，先退回
+            const existingCard = zone.querySelector('.bac-card');
+            if (existingCard) document.getElementById('hierarchy-bank').appendChild(existingCard);
+
+            zone.innerHTML = ''; // 清空提示字
+            zone.appendChild(activeHCard);
+            activeHCard.classList.remove('selected');
+            const placedCardId = activeHCard.getAttribute('data-id');
+            activeHCard = null;
+
+            // 觸發展開下一層
+            if (expectedLevel === 1) {
+                zone.classList.remove('p-4'); zone.classList.add('border-none', 'p-0');
+                setTimeout(() => document.getElementById('layer2-container').style.display = 'block', 100);
+            } else if (expectedLevel === 2) {
+                if (placedCardId === 'L2_bacteria') setTimeout(() => document.getElementById('layer3-bac-container').style.display = 'flex', 100);
+                if (placedCardId === 'L2_cyanobacteria') setTimeout(() => document.getElementById('layer3-cya-container').style.display = 'flex', 100);
+            } else if (expectedLevel === 3) {
+                if (specificType === 'bac') l3BacCount++;
+                if (specificType === 'cya') l3CyaCount++;
+            }
+
+            checkQ5Complete();
+        }
+
+        function checkQ5Complete() {
+            // 檢查是否題庫全空，且 L3 的四個特定生物都歸位
+            const bankCount = document.getElementById('hierarchy-bank').querySelectorAll('.bac-card').length;
+            if (bankCount === 0 && l3BacCount === 2 && l3CyaCount === 2) {
+                document.getElementById('q5-feedback').style.display = 'block';
+                progress.q5 = true;
+                checkProgress();
+            } else {
+                document.getElementById('q5-feedback').style.display = 'none';
+                progress.q5 = false;
+                checkProgress();
+            }
+        }
+    </script>
+</body>
+</html>
