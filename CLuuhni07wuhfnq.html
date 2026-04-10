@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第五站：原生生物界：藻類</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
+            color: white;
+            border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        .hidden-step { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: var(--dora-blue);
+        }
+        .check-item:hover { background: #e0f2fe; }
+        .check-item input { width: 24px; height: 24px; margin-right: 12px; accent-color: var(--dora-blue); }
+
+        /* 圖文配對相關樣式 */
+        .img-card {
+            width: 100px;
+            height: 100px;
+            border: 3px solid var(--dora-blue);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .img-card:active { transform: scale(0.95); }
+        .img-card.selected {
+            border-color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(227, 0, 27, 0.3);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .img-card img { width: 100%; height: 100%; object-fit: cover; }
+        .img-card .label {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.6); color: white;
+            font-size: 12px; text-align: center; padding: 2px 0; font-weight: bold;
+        }
+
+        .drop-zone-img {
+            width: 100px; height: 100px;
+            background-color: #f8fafc; border: 3px dashed #9ca3af;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; overflow: hidden; position: relative;
+        }
+        .drop-zone-img:hover { background-color: #e2e8f0; border-color: var(--dora-blue); }
+        .drop-zone-img .placeholder-text { font-size: 14px; color: #9ca3af; font-weight: bold; text-align: center; }
+        .drop-zone-img .img-card { border: none; box-shadow: none; width: 100%; height: 100%; border-radius: 0; }
+
+        /* 找碴遊戲樣式 */
+        .imposter-btn {
+            border: 3px solid transparent; border-radius: 16px; overflow: hidden;
+            cursor: pointer; transition: all 0.2s; position: relative; background: white;
+        }
+        .imposter-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .imposter-btn:active { transform: scale(0.95); }
+        .imposter-btn.wrong { border-color: #9E9E9E; opacity: 0.6; filter: grayscale(100%); }
+        .imposter-btn.correct { border-color: var(--dora-red); animation: shake 0.4s; box-shadow: 0 0 20px rgba(227,0,27,0.4); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-2deg); }
+            75% { transform: translateX(5px) rotate(2deg); }
+        }
+
+        /* 提示彈跳視窗 */
+        #toast-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center;
+        }
+        .toast-content {
+            background: white; padding: 32px; border-radius: 24px; text-align: center;
+            max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="pb-24">
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-leaf"></i>
+                第五站：原生生物界 (藻類)
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                進度 5/5
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 區塊 1：藻類基本知識 ================= -->
+        <section class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-water"></i> 水域中的生產者：藻類
+            </h2>
+            <p class="mb-4 text-gray-700">
+                藻類具有<strong>細胞壁</strong>，也有<strong>葉綠體</strong>能行光合作用。許多種類也因含有葉綠素以外的其他色素而呈現不同顏色。多數藻類生活於水中，是水域環境中重要的生產者。<br><br>
+                藻類形態多樣，有微小的單細胞藻類，例如單胞藻；也有可長達十幾公尺以上的大型多細胞藻類，例如巨藻。
+            </p>
+            
+            <div class="highlight-box bg-[#F0FDF4] border-green-500 text-green-800 flex gap-4 items-center">
+                <i class="fa-solid fa-truck-fast text-3xl"></i>
+                <div>
+                    <strong>知識快遞：</strong><br>
+                    藻類雖然能光合作用，但它們<strong class="text-[var(--dora-red)]">不屬於植物界</strong>喔！因為藻類沒有維管束，也不具有真正的根、莖、葉構造。
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-6">
+                <!-- Q1.1 屬於哪一界 -->
+                <p class="font-bold mb-3 text-[var(--dora-blue)]">Q1-1：請問藻類屬於哪一界生物？</p>
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <button class="btn-action bg-white !text-gray-700 border-2 border-gray-200" onclick="handleQ1_1(false, this)">原核生物界</button>
+                    <button class="btn-action bg-white !text-gray-700 border-2 border-gray-200" onclick="handleQ1_1(true, this)">原生生物界</button>
+                    <button class="btn-action bg-white !text-gray-700 border-2 border-gray-200" onclick="handleQ1_1(false, this)">植物界</button>
+                    <button class="btn-action bg-white !text-gray-700 border-2 border-gray-200" onclick="handleQ1_1(false, this)">動物界</button>
+                    <button class="btn-action bg-white !text-gray-700 border-2 border-gray-200" onclick="handleQ1_1(false, this)">真菌界</button>
+                </div>
+
+                <!-- Q1.2 藻類特徵 -->
+                <div id="q1-2-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6">
+                    <p class="font-bold mb-3 text-[var(--dora-blue)]">Q1-2：請選出所有屬於藻類的特徵與功能：</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <label class="check-item"><input type="checkbox" class="q1-2-check" data-val="細胞核"> 細胞核</label>
+                        <label class="check-item"><input type="checkbox" class="q1-2-check" data-val="粒線體"> 粒線體</label>
+                        <label class="check-item"><input type="checkbox" class="q1-2-check" data-val="葉綠體"> 葉綠體</label>
+                        <label class="check-item"><input type="checkbox" class="q1-2-check" data-val="呼吸作用"> 呼吸作用</label>
+                        <label class="check-item"><input type="checkbox" class="q1-2-check" data-val="光合作用"> 光合作用</label>
+                    </div>
+                    <button class="btn-action w-full md:w-auto mb-6" onclick="checkQ1_2()"><i class="fa-solid fa-check"></i> 確認特徵</button>
+                </div>
+
+                <!-- Q1.3 單細胞與多細胞判斷 -->
+                <div id="q1-3-container" class="hidden-step border-t-2 border-dashed border-gray-300 pt-6">
+                    <p class="font-bold mb-3 text-[var(--dora-blue)]">Q1-3：從圖說的比例尺判斷，下列藻類是單細胞還是多細胞生物？</p>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <!-- 單胞藻 -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <img src="CL0701.png" class="h-32 mx-auto object-cover rounded mb-2" onerror="this.src='https://placehold.co/200x150/A5D6A7/333?text=單胞藻+(CL0701)'">
+                            <p class="font-bold text-[var(--dora-blue)] mb-2">單胞藻 (微小比例尺)</p>
+                            <select id="sel-0701" class="w-full p-2 border-2 border-gray-300 rounded-lg font-bold">
+                                <option value="">請選擇...</option><option value="single">單細胞生物</option><option value="multi">多細胞生物</option>
+                            </select>
+                        </div>
+                        <!-- 巨藻 -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <img src="CL0702.png" class="h-32 mx-auto object-cover rounded mb-2" onerror="this.src='https://placehold.co/200x150/4CAF50/FFF?text=巨藻+(CL0702)'">
+                            <p class="font-bold text-[var(--dora-blue)] mb-2">巨藻 (可長達數十公尺)</p>
+                            <select id="sel-0702" class="w-full p-2 border-2 border-gray-300 rounded-lg font-bold">
+                                <option value="">請選擇...</option><option value="single">單細胞生物</option><option value="multi">多細胞生物</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-action w-full md:w-auto mt-6" onclick="checkQ1_3()"><i class="fa-solid fa-magnifying-glass"></i> 確認判斷</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 2：生活應用與圖文配對 ================= -->
+        <section id="section-q2" class="card-box hidden-step">
+            <h2 class="section-title">
+                <i class="fa-solid fa-bowl-food"></i> 藻類的生活應用
+            </h2>
+            <p class="mb-4 text-gray-700">
+                有些藻類可直接食用，例如<strong>石蓴</strong>和<strong>昆布（海帶）</strong>；有些則可作為加工原料，例如<strong>石花菜</strong>可提煉洋菜膠（寒天）。由<strong>矽藻</strong>死後沉積形成的矽藻土則可製作成吸溼地墊。
+            </p>
+
+            <div class="bg-yellow-50 p-4 md:p-6 rounded-xl border-2 border-[var(--dora-yellow)] mt-4">
+                <h3 class="font-black text-[var(--dora-red)] mb-4 text-xl"><i class="fa-solid fa-puzzle-piece"></i> 綜合配對：藻類的真面目與應用</h3>
+                <p class="font-bold mb-2">請先點擊上方的圖片，再點擊下方的空框放入對應的位置！</p>
+
+                <!-- 待配對圖片庫 (使用 overflow-x-auto 讓超出範圍可滑動) -->
+                <div class="bg-blue-50 p-3 rounded-xl border-2 border-blue-200 mb-6">
+                    <p class="text-sm font-bold text-blue-600 mb-2">待選圖片區 (可左右滑動)：</p>
+                    <div id="img-bank" class="flex gap-3 overflow-x-auto pb-2 items-center min-h-[110px]">
+                        <!-- 動態插入 10 張圖 -->
+                    </div>
+                </div>
+
+                <!-- 配對目標區 -->
+                <div class="space-y-4">
+                    <!-- 石蓴 -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 text-center md:text-left">
+                            <h4 class="font-black text-[var(--dora-blue)] text-lg mb-1">石蓴 <span class="text-sm text-green-600 bg-green-100 px-2 rounded">綠藻</span></h4>
+                            <p class="text-sm text-gray-600">含有大量葉綠素，外觀呈綠色薄膜狀，可直接作為食材或煮湯。</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入活體照</span>
+                                <div class="drop-zone-img" data-accept="0704" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入食物照</span>
+                                <div class="drop-zone-img" data-accept="0704-1" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 昆布 -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 text-center md:text-left">
+                            <h4 class="font-black text-[var(--dora-blue)] text-lg mb-1">昆布(海帶) <span class="text-sm text-yellow-700 bg-yellow-100 px-2 rounded">褐藻</span></h4>
+                            <p class="text-sm text-gray-600">富含藻褐素，呈現黃褐色。為大型多細胞藻類，是熬製高湯的極佳食材。</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入活體照</span>
+                                <div class="drop-zone-img" data-accept="0705" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入食物照</span>
+                                <div class="drop-zone-img" data-accept="0705-1" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 紫菜 -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 text-center md:text-left">
+                            <h4 class="font-black text-[var(--dora-blue)] text-lg mb-1">紫菜(海苔) <span class="text-sm text-red-600 bg-red-100 px-2 rounded">紅藻</span></h4>
+                            <p class="text-sm text-gray-600">含有藻紅素而呈紫紅色。乾燥加工後就是大家愛吃的「海苔」。</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入活體照</span>
+                                <div class="drop-zone-img" data-accept="0706" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入食物照</span>
+                                <div class="drop-zone-img" data-accept="0706-1" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 石花菜 -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 text-center md:text-left">
+                            <h4 class="font-black text-[var(--dora-blue)] text-lg mb-1">石花菜 <span class="text-sm text-red-600 bg-red-100 px-2 rounded">紅藻</span></h4>
+                            <p class="text-sm text-gray-600">外觀像細小的分枝，煮沸過濾後冷卻，可提煉出洋菜膠（又稱寒天）。</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入活體照</span>
+                                <div class="drop-zone-img" data-accept="0707" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入加工照</span>
+                                <div class="drop-zone-img" data-accept="0707-1" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 矽藻 -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center gap-4">
+                        <div class="flex-1 text-center md:text-left">
+                            <h4 class="font-black text-[var(--dora-blue)] text-lg mb-1">矽藻 <span class="text-sm text-yellow-600 bg-yellow-100 px-2 rounded">黃褐色</span></h4>
+                            <p class="text-sm text-gray-600">細胞壁富含矽質（玻璃的主要成分），死後沉積形成的矽藻土常做成吸溼地墊。</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入活體照</span>
+                                <div class="drop-zone-img" data-accept="0708" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-gray-500 mb-1">放入加工照</span>
+                                <div class="drop-zone-img" data-accept="0708-1" onclick="handleImgZoneClick(this)"><span class="placeholder-text">點擊放置</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-action w-full mt-6 py-3 text-xl" onclick="checkQ2_1()"><i class="fa-solid fa-check-double"></i> 送出圖文配對</button>
+            </div>
+        </section>
+
+
+        <!-- ================= 區塊 3：找碴大挑戰 ================= -->
+        <section id="section-q3" class="card-box hidden-step">
+            <h2 class="section-title">
+                <i class="fa-solid fa-magnifying-glass"></i> 藻類家族找碴遊戲
+            </h2>
+            <div class="bg-red-50 p-6 rounded-xl border-2 border-red-300">
+                <h3 class="font-black text-[var(--dora-red)] mb-2 text-xl">⚠️ 警告：有偽裝者混進來了！</h3>
+                <p class="mb-4 text-gray-800 font-bold">
+                    下列八個生物中，有一個<span class="text-red-600">根本不屬於藻類（原生生物界）</span>，而是構造更簡單的「原核生物」。請把它揪出來！
+                </p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <!-- 選項按鈕 -->
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0704.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=石蓴'"><div class="p-2 text-center font-bold">石蓴</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0705.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=昆布'"><div class="p-2 text-center font-bold">昆布</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0706.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=紫菜'"><div class="p-2 text-center font-bold">紫菜</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0707.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=石花菜'"><div class="p-2 text-center font-bold">石花菜</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0708.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=矽藻'"><div class="p-2 text-center font-bold">矽藻</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0701.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=單胞藻'"><div class="p-2 text-center font-bold">單胞藻</div></div>
+                    <div class="imposter-btn" onclick="handleImposter(this, false)"><img src="CL0702.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=巨藻'"><div class="p-2 text-center font-bold">巨藻</div></div>
+                    
+                    <!-- 正確答案 (偽裝者：色球藻 屬於藍綠菌) -->
+                    <div class="imposter-btn" onclick="handleImposter(this, true)"><img src="CLpic07.png" onerror="this.src='https://placehold.co/150x150/FFF/333?text=色球藻(CLpic07)'"><div class="p-2 text-center font-bold text-[var(--dora-red)]">色球藻</div></div>
+                </div>
+
+                <div id="q3-feedback" class="hidden-step highlight-box !bg-red-100 !border-red-500 mt-6 text-red-800">
+                    <i class="fa-solid fa-face-grin-stars text-2xl mb-2 text-[var(--dora-red)]"></i><br>
+                    <strong>抓到了！色球藻是偽裝者！</strong><br>
+                    色球藻屬於「藍綠菌」，沒有細胞核與葉綠體，是構造最簡單的<strong>原核生物</strong>。雖然名字有個藻字，但跟其他真正的藻類（原生生物）完全不同喔！
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 區塊 4：重點整理 ================= -->
+        <section class="highlight-box bg-[#E8F6FC] border-[var(--dora-blue)] border-l-8 rounded-xl p-6 mb-12 shadow-md">
+            <h2 class="text-2xl font-black text-[var(--dora-blue)] mb-4">
+                <i class="fa-solid fa-thumbtack"></i> 第五站重點整理
+            </h2>
+            <ul class="list-disc list-inside space-y-3 font-bold text-lg text-gray-800">
+                <li><strong>分類地位：</strong>屬於有細胞核的<span class="text-[var(--dora-red)]">原生生物界</span>（不是植物界，無真正的根莖葉）。</li>
+                <li><strong>細胞特徵：</strong>具有細胞核、粒線體，且有<span class="text-[var(--dora-red)]">細胞壁</span>與<span class="text-[var(--dora-red)]">葉綠體</span>，可行光合作用，是水域重要生產者。</li>
+                <li><strong>細胞數量：</strong>有單細胞（單胞藻、矽藻）與多細胞（巨藻、昆布）。</li>
+                <li><strong>生活應用：</strong>
+                    <ul class="list-circle list-inside ml-8 mt-1 text-gray-700 font-normal">
+                        <li>綠藻（石蓴）、褐藻（昆布）、紅藻（紫菜）常直接作食材。</li>
+                        <li>紅藻（石花菜）可提煉洋菜膠(寒天)。</li>
+                        <li>矽藻細胞壁含矽質，沉積可作吸溼地墊。</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ================= 下一頁按鈕 ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成所有測驗解鎖任意門
+            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLuwqa08fjuw.html" class="btn-red animate-bounce no-underline">
+                <i class="fa-solid fa-door-open text-3xl"></i>
+                使用任意門前往下一站
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600 whitespace-pre-line"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        // 總進度控管
+        let progress = { q1_1: false, q1_2: false, q1_3: false, q2_1: false, q3: false };
+
+        function checkProgress() {
+            if (progress.q1_1 && progress.q1_2 && progress.q1_3) {
+                document.getElementById('section-q2').style.display = 'block';
+            }
+            if (progress.q2_1) {
+                document.getElementById('section-q3').style.display = 'block';
+            }
+            if (Object.values(progress).every(v => v === true)) {
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 300);
+            }
+        }
+
+        function showToast(isSuccess, titleMsg, descMsg) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fa-solid fa-face-smile-wink text-[var(--dora-blue)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-blue)]">${titleMsg || '叮咚！太棒了！'}</span>`;
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-[var(--dora-red)]"></i>';
+                title.innerHTML = `<span class="text-[var(--dora-red)]">${titleMsg || '哎呀！再想想看喔'}</span>`;
+            }
+            msg.innerText = descMsg;
+            modal.style.display = 'flex';
+        }
+        function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
+
+        // ================= Q1 邏輯 =================
+        function handleQ1_1(isCorrect, btn) {
+            // UI 更新
+            btn.parentElement.querySelectorAll('.btn-action').forEach(b => {
+                b.classList.remove('border-[var(--dora-blue)]', 'bg-blue-50', 'text-[var(--dora-blue)]');
+                b.classList.add('border-gray-200', 'bg-white', '!text-gray-700');
+            });
+            btn.classList.remove('border-gray-200', 'bg-white', '!text-gray-700');
+            btn.classList.add('border-[var(--dora-blue)]', 'bg-blue-50', 'text-[var(--dora-blue)]');
+
+            if (isCorrect) {
+                showToast(true, '答對了！', '雖然有些藻類很大像植物，但因為缺乏真正的根莖葉構造，被歸類在比較簡單的「原生生物界」喔！');
+                document.getElementById('q1-2-container').style.display = 'block';
+                progress.q1_1 = true; checkProgress();
+            } else {
+                showToast(false, '不是這界喔', '提示：藻類有細胞核（排除原核），但沒有維管束和真正的根莖葉（排除植物），構造較簡單。');
+            }
+        }
+
+        function checkQ1_2() {
+            const cbs = document.querySelectorAll('.q1-2-check');
+            let checkedCount = 0;
+            let missedMito = false;
+            let missedResp = false;
+
+            cbs.forEach(cb => {
+                if (cb.checked) checkedCount++;
+                if (!cb.checked && cb.getAttribute('data-val') === '粒線體') missedMito = true;
+                if (!cb.checked && cb.getAttribute('data-val') === '呼吸作用') missedResp = true;
+            });
+
+            if (checkedCount === 5) {
+                showToast(true, '特徵全對！', '藻類是真核生物（有細胞核、粒線體），並且有葉綠體能光合作用。同時跟所有生物一樣，都需要進行呼吸作用產生能量喔！');
+                document.getElementById('q1-3-container').style.display = 'block';
+                progress.q1_2 = true; checkProgress();
+            } else {
+                if (missedMito || missedResp) {
+                    showToast(false, '小陷阱提醒', '別忘了！藻類是真核生物，而且「所有活細胞都需要呼吸作用（利用粒線體）」來產生維持生命的能量喔，不能只光合作用。請把特徵全勾上！');
+                } else {
+                    showToast(false, '少勾了喔', '請把藻類具備的「所有」構造與功能都勾選起來！');
+                }
+            }
+        }
+
+        function checkQ1_3() {
+            const v1 = document.getElementById('sel-0701').value;
+            const v2 = document.getElementById('sel-0702').value;
+
+            if (!v1 || !v2) {
+                showToast(false, '尚未完成', '請為兩種藻類選擇單/多細胞！'); return;
+            }
+            if (v1 === 'single' && v2 === 'multi') {
+                showToast(true, '判斷正確', '微小的單胞藻是單細胞生物，而巨大的巨藻則是多細胞生物。藻類的體型差異非常大！');
+                progress.q1_3 = true; checkProgress();
+            } else {
+                showToast(false, '判斷錯誤', '看圖片旁的提示文字喔！單胞藻很微小，而巨藻可以長達數十公尺。');
+            }
+        }
+
+        // ================= Q2 圖文配對邏輯 =================
+        const imgData = [
+            { id: '0704', label: '石蓴(活體)', src: 'CL0704.png' },
+            { id: '0704-1', label: '石蓴料理', src: 'CL0704-1.png' },
+            { id: '0705', label: '昆布(活體)', src: 'CL0705.png' },
+            { id: '0705-1', label: '昆布湯', src: 'CL0705-1.png' },
+            { id: '0706', label: '紫菜(活體)', src: 'CL0706.png' },
+            { id: '0706-1', label: '海苔包飯', src: 'CL0706-1.png' },
+            { id: '0707', label: '石花菜(活體)', src: 'CL0707.png' },
+            { id: '0707-1', label: '寒天凍', src: 'CL0707-1.png' },
+            { id: '0708', label: '矽藻(顯微)', src: 'CL0708.png' },
+            { id: '0708-1', label: '吸溼地墊', src: 'CL0708-1.png' }
+        ];
+
+        let activeImgCard = null;
+
+        function initImgBank() {
+            const bank = document.getElementById('img-bank');
+            // 打亂順序
+            const shuffled = [...imgData].sort(() => Math.random() - 0.5);
+            shuffled.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                card.setAttribute('data-id', img.id);
+                // 圖片與備用圖片設定
+                card.innerHTML = `<img src="${img.src}" onerror="this.src='https://placehold.co/100x100/FFF/0096D6?text=${img.label}'">
+                                  <div class="label">${img.label}</div>`;
+                card.onclick = () => handleImgCardClick(card);
+                bank.appendChild(card);
+            });
+        }
+
+        function handleImgCardClick(card) {
+            // 若卡片在格子上，退回題庫
+            if (card.parentElement.id !== 'img-bank') {
+                const zone = card.parentElement;
+                document.getElementById('img-bank').appendChild(card);
+                zone.querySelector('.placeholder-text').style.display = 'block';
+                return;
+            }
+
+            // 在題庫中選取
+            if (activeImgCard === card) {
+                card.classList.remove('selected');
+                activeImgCard = null;
+            } else {
+                if (activeImgCard) activeImgCard.classList.remove('selected');
+                card.classList.add('selected');
+                activeImgCard = card;
+            }
+        }
+
+        function handleImgZoneClick(zone) {
+            if (!activeImgCard) {
+                // 如果格子內有東西，且沒選新牌，等同退回
+                const existing = zone.querySelector('.img-card');
+                if(existing) {
+                    document.getElementById('img-bank').appendChild(existing);
+                    zone.querySelector('.placeholder-text').style.display = 'block';
+                }
+                return;
+            }
+
+            // 放入格子
+            const existing = zone.querySelector('.img-card');
+            if (existing) document.getElementById('img-bank').appendChild(existing);
+
+            zone.appendChild(activeImgCard);
+            activeImgCard.classList.remove('selected');
+            activeImgCard = null;
+            zone.querySelector('.placeholder-text').style.display = 'none';
+        }
+
+        function checkQ2_1() {
+            const zones = document.querySelectorAll('.drop-zone-img');
+            let isCorrect = true;
+            let count = 0;
+
+            zones.forEach(zone => {
+                const card = zone.querySelector('.img-card');
+                if (card) {
+                    count++;
+                    if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) {
+                        isCorrect = false;
+                    }
+                }
+            });
+
+            if (count < 10) {
+                showToast(false, '任務未完成', '請將上方題庫的 10 張圖片，都放入下方對應的分類空框中喔！');
+                return;
+            }
+
+            if (isCorrect) {
+                showToast(true, '配對完全正確！', '太厲害了！藻類不僅是水域生態的基礎，更廣泛應用在我們日常的飲食與生活中！');
+                progress.q2_1 = true; checkProgress();
+            } else {
+                showToast(false, '有圖片放錯囉', '提示：請仔細對照左側的文字說明，活體與加工品的對應關係不要弄混喔！可以參考圖片下方的標籤。');
+            }
+        }
+
+        // ================= Q3 找碴邏輯 =================
+        function handleImposter(btn, isImposter) {
+            if (isImposter) {
+                btn.classList.add('correct');
+                document.getElementById('q3-feedback').style.display = 'block';
+                progress.q3 = true; checkProgress();
+            } else {
+                btn.classList.add('wrong');
+                // 加上震動動畫後移除
+                btn.classList.add('shake');
+                setTimeout(() => btn.classList.remove('shake'), 400);
+            }
+        }
+
+        // 啟動初始化
+        window.onload = () => {
+            initImgBank();
+        };
+
+    </script>
+</body>
+</html>
