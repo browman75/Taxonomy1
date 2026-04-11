@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>第七站：生物分類跑酷賽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* 哆啦A夢風格按鈕 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 12px;
+            font-weight: 900;
+            box-shadow: 0 4px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            color: white;
+            border-radius: 999px;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #B30015;
+            transition: all 0.1s;
+            cursor: pointer;
+            text-align: center;
+            display: inline-block;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        /* 分類選項按鈕 */
+        .category-btn {
+            background-color: white;
+            border: 3px solid var(--dora-blue);
+            color: var(--dora-blue);
+            border-radius: 16px;
+            padding: 12px 8px;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 6px 0 var(--dora-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+        .category-btn:hover { background-color: #f0f9ff; }
+        .category-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--dora-blue); }
+
+        /* 跑酷區與生物卡片 */
+        .track-area {
+            width: 100%;
+            height: 200px;
+            background: #e2e8f0;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
+            border: 4px dashed #cbd5e1;
+        }
+        
+        .runner {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            background: white;
+            padding: 8px;
+            border-radius: 16px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            border: 4px solid var(--dora-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 110px;
+            z-index: 10;
+        }
+        .runner img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        /* 終點警示區 */
+        .danger-zone {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: repeating-linear-gradient(
+                45deg,
+                #ffcccc,
+                #ffcccc 10px,
+                #ff9999 10px,
+                #ff9999 20px
+            );
+            border-left: 6px solid var(--dora-red);
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 動畫特效 */
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, -50%, 0); }
+            20%, 80% { transform: translate3d(4px, -50%, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, -50%, 0); }
+            40%, 60% { transform: translate3d(8px, -50%, 0); }
+        }
+
+        .pop-out { animation: popOut 0.3s ease-out forwards; }
+        @keyframes popOut {
+            0% { transform: translateY(-50%) scale(1); opacity: 1; }
+            100% { transform: translateY(-100%) scale(1.5); opacity: 0; }
+        }
+
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 提示彈跳視窗與結果視窗 */
+        .overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50;
+            align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
+        .overlay-content {
+            background: white; padding: 40px; border-radius: 32px; text-align: center;
+            max-width: 400px; width: 90%; border: 6px solid var(--dora-blue);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-xl md:text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-person-running"></i>
+                生物分類跑酷賽
+            </div>
+            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                挑戰關卡
+            </div>
+        </div>
+    </header>
+
+    <!-- 遊戲主畫面 -->
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        
+        <!-- 狀態列 -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-[var(--dora-blue)] mb-6 flex justify-between items-center pop-in">
+            <div class="text-xl md:text-2xl font-black text-[var(--dora-blue)]">
+                分數: <span id="score" class="text-[var(--dora-red)]">0</span>
+            </div>
+            <div class="text-xl md:text-2xl font-black text-[var(--dora-blue)]">
+                生命: <span id="lives">❤️❤️❤️</span>
+            </div>
+        </div>
+
+        <!-- 跑酷動畫區 -->
+        <div class="track-area mb-8">
+            <div class="danger-zone"></div>
+            
+            <div id="runner" class="runner hidden">
+                <img id="runner-img" src="" alt="生物圖片">
+                <div id="runner-name" class="font-bold text-base text-[var(--dora-blue)] text-center w-full truncate"></div>
+            </div>
+            
+            <!-- 初始提示語 -->
+            <div id="start-hint" class="absolute inset-0 flex items-center justify-center text-gray-400 font-black text-2xl tracking-wider">
+                等待遊戲開始...
+            </div>
+        </div>
+
+        <!-- 分類操作按鈕 -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 pb-16">
+            <button class="category-btn" onclick="game.checkAnswer('原核生物-細菌')">
+                <i class="fa-solid fa-capsules text-2xl mb-2 text-gray-500"></i>
+                <span>原核生物</span>
+                <span class="text-[var(--dora-red)]">細菌</span>
+            </button>
+            <button class="category-btn" onclick="game.checkAnswer('原核生物-藍綠菌')">
+                <i class="fa-solid fa-sun text-2xl mb-2 text-gray-500"></i>
+                <span>原核生物</span>
+                <span class="text-[var(--dora-red)]">藍綠菌</span>
+            </button>
+            <button class="category-btn" onclick="game.checkAnswer('原生生物-藻類')">
+                <i class="fa-solid fa-leaf text-2xl mb-2 text-green-600"></i>
+                <span>原生生物</span>
+                <span class="text-green-600">藻類</span>
+            </button>
+            <button class="category-btn" onclick="game.checkAnswer('原生生物-原生動物')">
+                <i class="fa-solid fa-paw text-2xl mb-2 text-orange-500"></i>
+                <span>原生生物</span>
+                <span class="text-orange-500">原生動物</span>
+            </button>
+            <button class="category-btn" onclick="game.checkAnswer('原生生物-原生菌')">
+                <i class="fa-solid fa-mushroom text-2xl mb-2 text-purple-600"></i>
+                <span>原生生物</span>
+                <span class="text-purple-600">原生菌</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- 遊戲覆蓋視窗 (開始/結果) -->
+    <div id="gameOverlay" class="overlay">
+        <div class="overlay-content pop-in">
+            <i class="fa-solid fa-flag-checkered text-6xl text-[var(--dora-yellow)] mb-4"></i>
+            <h1 id="overlayTitle" class="text-3xl md:text-4xl font-black mb-4">生物分類跑酷賽</h1>
+            <p id="overlayDesc" class="text-lg md:text-xl font-bold text-gray-600 mb-8 leading-relaxed">
+                準備好挑戰你的分類速度了嗎？<br>
+                <span class="text-sm text-[var(--dora-red)]">在生物跑進危險區前，點擊正確的分類按鈕！</span>
+            </p>
+            <div id="overlayBtnContainer">
+                <button class="btn-action w-full py-4 text-2xl" onclick="game.start()">開始挑戰！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲邏輯 -->
+    <script>
+        // 題庫設定 (對應您的要求)
+        const organisms = [
+            { name: "草履蟲", img: "CL0801.png", category: "原生生物-原生動物" },
+            { name: "線鞭蟲", img: "CL0802.png", category: "原生生物-原生動物" },
+            { name: "瘧原蟲", img: "CL0803.png", category: "原生生物-原生動物" },
+            { name: "變形蟲", img: "CL0804.png", category: "原生生物-原生動物" },
+            { name: "黏菌", img: "CL0805.png", category: "原生生物-原生菌" },
+            { name: "單胞藻", img: "CL0701.png", category: "原生生物-藻類" },
+            { name: "巨藻", img: "CL0702.png", category: "原生生物-藻類" },
+            { name: "石蓴", img: "CL0704.png", category: "原生生物-藻類" },
+            { name: "昆布(海帶)", img: "CL0705.png", category: "原生生物-藻類" },
+            { name: "紫菜(海苔)", img: "CL0706.png", category: "原生生物-藻類" },
+            { name: "石花菜(寒天)", img: "CL0707.png", category: "原生生物-藻類" },
+            { name: "矽藻", img: "CL0708.png", category: "原生生物-藻類" },
+            { name: "色球藻", img: "CLpic07.png", category: "原核生物-藍綠菌" },
+            { name: "顫藻", img: "CLpic08.png", category: "原核生物-藍綠菌" },
+            { name: "念珠藻", img: "CLpic09.png", category: "原核生物-藍綠菌" },
+            { name: "金黃色葡萄球菌", img: "CLpic03.png", category: "原核生物-細菌" },
+            { name: "結核桿菌", img: "CLpic04.png", category: "原核生物-細菌" },
+            { name: "鉤端螺旋菌", img: "CLpic05.png", category: "原核生物-細菌" }
+        ];
+
+        const game = {
+            score: 0,
+            lives: 3,
+            currentIndex: 0,
+            items: [],
+            timer: null,
+            position: 0,
+            speed: 0.3, // 初始移動速度
+            isPlaying: false,
+            
+            init: function() {
+                const overlay = document.getElementById('gameOverlay');
+                overlay.style.display = 'flex';
+                this.resetOverlayToStart();
+            },
+            
+            resetOverlayToStart: function() {
+                document.getElementById('overlayTitle').innerText = "生物分類跑酷賽";
+                document.getElementById('overlayTitle').style.color = "var(--dora-blue)";
+                document.getElementById('overlayDesc').innerHTML = "準備好挑戰你的分類速度了嗎？<br><span class='text-sm text-[var(--dora-red)]'>在生物跑進危險區前，點擊正確的分類按鈕！</span>";
+                
+                const btnContainer = document.getElementById('overlayBtnContainer');
+                btnContainer.innerHTML = '';
+                const startBtn = document.createElement('button');
+                startBtn.className = 'btn-action w-full py-4 text-2xl';
+                startBtn.innerText = "開始挑戰！";
+                startBtn.onclick = () => this.start();
+                btnContainer.appendChild(startBtn);
+            },
+            
+            start: function() {
+                document.getElementById('gameOverlay').style.display = 'none';
+                document.getElementById('start-hint').style.display = 'none';
+                
+                this.score = 0;
+                this.lives = 3;
+                this.currentIndex = 0;
+                this.isPlaying = true;
+                
+                // 隨機打亂所有題目
+                this.items = [...organisms].sort(() => Math.random() - 0.5);
+                
+                this.updateStats();
+                this.spawn();
+            },
+            
+            spawn: function() {
+                if (this.currentIndex >= this.items.length) {
+                    this.end(true);
+                    return;
+                }
+                
+                this.position = 0;
+                // 速度隨著題數增加而變快，增加跑酷刺激感
+                this.speed = 0.25 + (this.currentIndex * 0.015); 
+                
+                const currentItem = this.items[this.currentIndex];
+                const runner = document.getElementById('runner');
+                const runnerImg = document.getElementById('runner-img');
+                
+                runnerImg.src = currentItem.img;
+                // 防止圖片破圖的防呆設計
+                runnerImg.onerror = function() {
+                    this.src = `https://placehold.co/100x100/4A90E2/FFF?text=${encodeURIComponent(currentItem.name)}`;
+                };
+                document.getElementById('runner-name').innerText = currentItem.name;
+                
+                runner.style.left = '0%';
+                runner.style.display = 'flex';
+                runner.classList.remove('hidden', 'pop-out', 'shake');
+                
+                clearInterval(this.timer);
+                this.timer = setInterval(() => this.tick(), 20); // 50fps 更新頻率
+            },
+            
+            tick: function() {
+                if (!this.isPlaying) return;
+                
+                this.position += this.speed;
+                const runner = document.getElementById('runner');
+                
+                // 動態計算 left 以避免卡片超出 track 範圍
+                runner.style.left = `calc(${this.position}% - ${this.position * 1.1}px)`;
+                
+                // 當移動超過 100% 視為掉入危險區 (未作答)
+                if (this.position >= 100) {
+                    this.handleWrong();
+                }
+            },
+            
+            checkAnswer: function(category) {
+                if (!this.isPlaying) return;
+                
+                const currentItem = this.items[this.currentIndex];
+                
+                if (category === currentItem.category) {
+                    // 答對邏輯
+                    this.isPlaying = false;
+                    clearInterval(this.timer);
+                    
+                    this.score += 10;
+                    this.updateStats();
+                    
+                    const runner = document.getElementById('runner');
+                    runner.classList.add('pop-out');
+                    
+                    setTimeout(() => {
+                        runner.style.display = 'none';
+                        this.currentIndex++;
+                        this.isPlaying = true;
+                        this.spawn();
+                    }, 300);
+                } else {
+                    // 答錯邏輯
+                    this.handleWrong();
+                }
+            },
+            
+            handleWrong: function() {
+                this.isPlaying = false;
+                clearInterval(this.timer);
+                
+                this.lives--;
+                this.updateStats();
+                
+                const runner = document.getElementById('runner');
+                runner.classList.add('shake');
+                
+                setTimeout(() => {
+                    runner.classList.remove('shake');
+                    if (this.lives <= 0) {
+                        this.end(false);
+                    } else {
+                        // 扣血後繼續同一題重新跑，或者換下一題？
+                        // 依據原始設計，扣血後換下一題
+                        runner.style.display = 'none';
+                        this.currentIndex++;
+                        this.isPlaying = true;
+                        this.spawn();
+                    }
+                }, 400);
+            },
+            
+            updateStats: function() {
+                document.getElementById('score').innerText = this.score;
+                document.getElementById('lives').innerText = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
+            },
+            
+            // 遊戲結束處理 (完全對應原始的 DOM 生成邏輯)
+            end: function(isWin) {
+                this.isPlaying = false;
+                clearInterval(this.timer);
+                
+                const runner = document.getElementById('runner');
+                runner.style.display = 'none';
+                document.getElementById('start-hint').style.display = 'flex';
+                
+                const overlay = document.getElementById('gameOverlay');
+                const title = document.getElementById('overlayTitle');
+                const desc = document.getElementById('overlayDesc');
+                const btnContainer = document.getElementById('overlayBtnContainer');
+                
+                overlay.style.display = 'flex';
+                btnContainer.innerHTML = '';
+                
+                if (isWin) {
+                    title.innerText = "恭喜過關！";
+                    title.style.color = "#4CAF50"; // 成功綠色
+                    desc.innerText = `太強了！你已經精通原核生物與原生生物的分類囉！\n最終得分：${this.score}`;
+                    
+                    // 依照要求設定下一步按鈕的連結與文字
+                    const nextBtn = document.createElement('a');
+                    nextBtn.className = 'btn-red w-full py-4 px-8 text-xl no-underline block';
+                    nextBtn.innerText = "返回最終挑戰";
+                    nextBtn.href = "CLlll10switch.html";
+                    btnContainer.appendChild(nextBtn);
+                } else {
+                    title.innerText = "挑戰失敗";
+                    title.style.color = "#EF5350"; // 失敗紅色
+                    desc.innerText = "別氣餒，生物分類需要多加練習，再試一次吧！";
+                    
+                    const retryBtn = document.createElement('button');
+                    retryBtn.className = 'btn-action w-full py-4 text-xl';
+                    retryBtn.innerText = "重新開始";
+                    retryBtn.onclick = () => this.start();
+                    btnContainer.appendChild(retryBtn);
+                }
+            }
+        };
+
+        // 頁面載入時初始化 overlay
+        window.onload = () => {
+            game.init();
+        };
+
+    </script>
+</body>
+</html>
