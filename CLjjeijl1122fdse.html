@@ -24,20 +24,25 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
+            touch-action: pan-y; /* 確保 iPad 上捲動順暢，防止誤觸縮放 */
         }
 
-        /* 哆啦A夢風格按鈕 */
+        /* 按鈕共用樣式 */
         .btn-action {
             background-color: var(--dora-blue);
             color: white;
-            border-radius: 12px;
+            border-radius: 16px;
             font-weight: 900;
-            box-shadow: 0 4px 0 #0077AA;
+            box-shadow: 0 6px 0 #0077AA;
             transition: all 0.1s;
             cursor: pointer;
             text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
+        .btn-action:active { transform: translateY(6px); box-shadow: 0 0 0 #0077AA; }
         
         .btn-red {
             background-color: var(--dora-red);
@@ -48,18 +53,33 @@
             transition: all 0.1s;
             cursor: pointer;
             text-align: center;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
         }
         .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
 
-        /* 分類選項按鈕 */
+        .btn-gray {
+            background-color: #9CA3AF;
+            color: white;
+            border-radius: 16px;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #6B7280;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        .btn-gray:active { transform: translateY(6px); box-shadow: 0 0 0 #6B7280; }
+
+        /* 分類選項按鈕 (放大版) */
         .category-btn {
             background-color: white;
-            border: 3px solid var(--dora-blue);
+            border: 4px solid var(--dora-blue);
             color: var(--dora-blue);
-            border-radius: 16px;
-            padding: 12px 8px;
-            font-size: 16px;
+            border-radius: 20px;
+            padding: 16px 8px;
+            font-size: 20px;
             font-weight: 900;
             cursor: pointer;
             transition: all 0.1s;
@@ -68,7 +88,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            line-height: 1.3;
+            line-height: 1.4;
+            min-height: 110px;
         }
         .category-btn:hover { background-color: #f0f9ff; }
         .category-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--dora-blue); }
@@ -76,9 +97,9 @@
         /* 跑酷區與生物卡片 */
         .track-area {
             width: 100%;
-            height: 200px;
+            height: 250px; /* 增加高度適合大圖 */
             background: #e2e8f0;
-            border-radius: 16px;
+            border-radius: 24px;
             position: relative;
             overflow: hidden;
             box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
@@ -91,22 +112,22 @@
             transform: translateY(-50%);
             left: 0;
             background: white;
-            padding: 8px;
-            border-radius: 16px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             border: 4px solid var(--dora-blue);
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 110px;
+            width: 140px; /* 放大卡片 */
             z-index: 10;
         }
         .runner img {
-            width: 80px;
-            height: 80px;
+            width: 110px;
+            height: 110px;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 6px;
+            border-radius: 12px;
+            margin-bottom: 8px;
         }
 
         /* 終點警示區 */
@@ -115,13 +136,13 @@
             right: 0;
             top: 0;
             bottom: 0;
-            width: 40px;
+            width: 50px;
             background: repeating-linear-gradient(
                 45deg,
                 #ffcccc,
-                #ffcccc 10px,
-                #ff9999 10px,
-                #ff9999 20px
+                #ffcccc 15px,
+                #ff9999 15px,
+                #ff9999 30px
             );
             border-left: 6px solid var(--dora-red);
             opacity: 0.8;
@@ -138,6 +159,13 @@
             30%, 50%, 70% { transform: translate3d(-8px, -50%, 0); }
             40%, 60% { transform: translate3d(8px, -50%, 0); }
         }
+        .main-shake { animation: mainShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes mainShake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
 
         .pop-out { animation: popOut 0.3s ease-out forwards; }
         @keyframes popOut {
@@ -153,83 +181,100 @@
 
         /* 提示彈跳視窗與結果視窗 */
         .overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50;
-            align-items: center; justify-content: center; backdrop-filter: blur(2px);
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px);
         }
         .overlay-content {
-            background: white; padding: 40px; border-radius: 32px; text-align: center;
-            max-width: 400px; width: 90%; border: 6px solid var(--dora-blue);
+            background: white; padding: 40px 30px; border-radius: 32px; text-align: center;
+            max-width: 500px; width: 90%; border: 6px solid var(--dora-blue);
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-height: 90vh; overflow-y: auto;
         }
+
+        /* 排行榜表格 */
+        .leaderboard-table th { background-color: var(--dora-blue); color: white; padding: 12px; }
+        .leaderboard-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-weight: bold; }
+        .leaderboard-table tr:nth-child(even) td { background-color: #f8fafc; }
+        .rank-1 { color: #D4AF37; font-size: 1.3em; }
+        .rank-2 { color: #C0C0C0; font-size: 1.2em; }
+        .rank-3 { color: #CD7F32; font-size: 1.2em; }
+
+        /* 輸入框 */
+        .input-field {
+            width: 100%; padding: 16px; border-radius: 16px; border: 3px solid #cbd5e1;
+            font-size: 20px; font-weight: bold; margin-bottom: 16px; text-align: center;
+            transition: all 0.2s;
+        }
+        .input-field:focus { border-color: var(--dora-blue); outline: none; box-shadow: 0 0 0 4px rgba(0,150,214,0.2); }
     </style>
 </head>
 <body>
 
     <!-- 頂部導航 -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="font-black text-[var(--dora-blue)] text-xl md:text-2xl flex items-center gap-2">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl md:text-3xl flex items-center gap-3">
                 <i class="fa-solid fa-person-running"></i>
                 生物分類跑酷賽
             </div>
-            <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                挑戰關卡
+            <div class="text-base font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
+                終極挑戰
             </div>
         </div>
     </header>
 
     <!-- 遊戲主畫面 -->
-    <main class="max-w-4xl mx-auto px-4 py-6">
+    <main id="main-game-area" class="max-w-4xl mx-auto px-4 py-6">
         
         <!-- 狀態列 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-[var(--dora-blue)] mb-6 flex justify-between items-center pop-in">
-            <div class="text-xl md:text-2xl font-black text-[var(--dora-blue)]">
+        <div class="bg-white rounded-3xl p-5 shadow-sm border-4 border-[var(--dora-blue)] mb-6 flex justify-between items-center pop-in">
+            <div class="text-2xl md:text-3xl font-black text-[var(--dora-blue)]">
                 分數: <span id="score" class="text-[var(--dora-red)]">0</span>
             </div>
-            <div class="text-xl md:text-2xl font-black text-[var(--dora-blue)]">
-                生命: <span id="lives">❤️❤️❤️</span>
+            <div class="text-2xl md:text-3xl font-black text-[var(--dora-blue)]">
+                生命: <span id="lives" class="text-3xl">❤️❤️❤️</span>
             </div>
         </div>
 
         <!-- 跑酷動畫區 -->
         <div class="track-area mb-8">
-            <div class="danger-zone"></div>
+            <div class="danger-zone"><i class="fa-solid fa-skull-crossbones text-white text-2xl"></i></div>
             
             <div id="runner" class="runner hidden">
                 <img id="runner-img" src="" alt="生物圖片">
-                <div id="runner-name" class="font-bold text-base text-[var(--dora-blue)] text-center w-full truncate"></div>
+                <div id="runner-name" class="font-black text-xl text-[var(--dora-blue)] text-center w-full truncate"></div>
             </div>
             
             <!-- 初始提示語 -->
-            <div id="start-hint" class="absolute inset-0 flex items-center justify-center text-gray-400 font-black text-2xl tracking-wider">
+            <div id="start-hint" class="absolute inset-0 flex items-center justify-center text-gray-400 font-black text-3xl tracking-wider">
                 等待遊戲開始...
             </div>
         </div>
 
         <!-- 分類操作按鈕 -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 pb-16">
+        <div class="grid grid-cols-2 gap-4 pb-16">
             <button class="category-btn" onclick="game.checkAnswer('原核生物-細菌')">
-                <i class="fa-solid fa-capsules text-2xl mb-2 text-gray-500"></i>
+                <i class="fa-solid fa-capsules text-3xl mb-2 text-gray-500"></i>
                 <span>原核生物</span>
                 <span class="text-[var(--dora-red)]">細菌</span>
             </button>
             <button class="category-btn" onclick="game.checkAnswer('原核生物-藍綠菌')">
-                <i class="fa-solid fa-sun text-2xl mb-2 text-gray-500"></i>
+                <i class="fa-solid fa-sun text-3xl mb-2 text-gray-500"></i>
                 <span>原核生物</span>
                 <span class="text-[var(--dora-red)]">藍綠菌</span>
             </button>
             <button class="category-btn" onclick="game.checkAnswer('原生生物-藻類')">
-                <i class="fa-solid fa-leaf text-2xl mb-2 text-green-600"></i>
+                <i class="fa-solid fa-leaf text-3xl mb-2 text-green-600"></i>
                 <span>原生生物</span>
                 <span class="text-green-600">藻類</span>
             </button>
             <button class="category-btn" onclick="game.checkAnswer('原生生物-原生動物')">
-                <i class="fa-solid fa-paw text-2xl mb-2 text-orange-500"></i>
+                <i class="fa-solid fa-paw text-3xl mb-2 text-orange-500"></i>
                 <span>原生生物</span>
                 <span class="text-orange-500">原生動物</span>
             </button>
-            <button class="category-btn" onclick="game.checkAnswer('原生生物-原生菌')">
-                <i class="fa-solid fa-mushroom text-2xl mb-2 text-purple-600"></i>
+            <button class="category-btn col-span-2 md:col-span-1 md:col-start-2" onclick="game.checkAnswer('原生生物-原生菌')">
+                <i class="fa-solid fa-mushroom text-3xl mb-2 text-purple-600"></i>
                 <span>原生生物</span>
                 <span class="text-purple-600">原生菌</span>
             </button>
@@ -240,21 +285,57 @@
     <!-- 遊戲覆蓋視窗 (開始/結果) -->
     <div id="gameOverlay" class="overlay">
         <div class="overlay-content pop-in">
-            <i class="fa-solid fa-flag-checkered text-6xl text-[var(--dora-yellow)] mb-4"></i>
-            <h1 id="overlayTitle" class="text-3xl md:text-4xl font-black mb-4">生物分類跑酷賽</h1>
-            <p id="overlayDesc" class="text-lg md:text-xl font-bold text-gray-600 mb-8 leading-relaxed">
-                準備好挑戰你的分類速度了嗎？<br>
-                <span class="text-sm text-[var(--dora-red)]">在生物跑進危險區前，點擊正確的分類按鈕！</span>
-            </p>
-            <div id="overlayBtnContainer">
-                <button class="btn-action w-full py-4 text-2xl" onclick="game.start()">開始挑戰！</button>
+            <!-- 標題區 -->
+            <div id="overlay-header">
+                <i class="fa-solid fa-bolt text-6xl text-[var(--dora-yellow)] mb-4"></i>
+                <h1 id="overlayTitle" class="text-4xl md:text-5xl font-black mb-4 text-[var(--dora-blue)]">極速分類跑酷賽</h1>
+                <p id="overlayDesc" class="text-xl font-bold text-gray-600 mb-8 leading-relaxed">
+                    愈快答對，分數愈高！<br>
+                    <span class="text-[var(--dora-red)]">小心別讓生物跑進危險區喔！</span>
+                </p>
             </div>
+
+            <!-- 登錄表單區 (預設隱藏) -->
+            <div id="login-form" class="hidden">
+                <p class="text-2xl font-black text-[var(--dora-blue)] mb-6">要登錄分數到排行榜嗎？</p>
+                <div class="flex gap-3 mb-2">
+                    <input type="text" id="stu-class" class="input-field w-1/2" placeholder="班級 (例:701)">
+                    <input type="text" id="stu-seat" class="input-field w-1/2" placeholder="座號 (例:05)">
+                </div>
+            </div>
+
+            <!-- 排行榜區 (預設隱藏) -->
+            <div id="leaderboard-section" class="hidden mb-6">
+                <h3 class="text-2xl font-black text-[var(--dora-blue)] mb-4"><i class="fa-solid fa-trophy text-[var(--dora-yellow)]"></i> 英雄排行榜</h3>
+                <div id="leaderboard-loading" class="text-gray-500 font-bold py-4">成績傳送中，請稍候...</div>
+                <div class="overflow-x-auto rounded-xl border-2 border-[var(--dora-blue)]">
+                    <table id="leaderboard-table" class="leaderboard-table w-full text-base hidden">
+                        <thead>
+                            <tr><th>名次</th><th>班級</th><th>座號</th><th>分數</th></tr>
+                        </thead>
+                        <tbody id="leaderboard-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 按鈕容器 -->
+            <div id="overlayBtnContainer" class="flex flex-col gap-4 mt-6">
+                <button class="btn-action w-full py-5 text-3xl" onclick="game.start()">開始挑戰！</button>
+            </div>
+            
+            <!-- 返回按鈕 (登錄後或不登錄顯示) -->
+            <a id="btn-return" href="CLlll10switch.html" class="btn-red w-full py-5 text-2xl mt-4 hidden">
+                <i class="fa-solid fa-forward-step"></i> 返回最終挑戰
+            </a>
         </div>
     </div>
 
     <!-- 遊戲邏輯 -->
     <script>
-        // 題庫設定 (對應您的要求)
+        // Google Apps Script 連結 (依據您的提供)
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxDxpDneO-ECgzZR754jySpIKXtEtOajbygRPrr50DueUzUMFflKRArK8dScFBuC2F1_w/exec";
+
+        // 題庫設定
         const organisms = [
             { name: "草履蟲", img: "CL0801.png", category: "原生生物-原生動物" },
             { name: "線鞭蟲", img: "CL0802.png", category: "原生生物-原生動物" },
@@ -276,6 +357,11 @@
             { name: "鉤端螺旋菌", img: "CLpic05.png", category: "原核生物-細菌" }
         ];
 
+        // 分數設定
+        const BASE_SCORE = 5000;
+        const MIN_SCORE = 500;
+        const PENALTY = 1000; // 答錯扣分
+
         const game = {
             score: 0,
             lives: 3,
@@ -283,7 +369,7 @@
             items: [],
             timer: null,
             position: 0,
-            speed: 0.3, // 初始移動速度
+            speed: 0.35, 
             isPlaying: false,
             
             init: function() {
@@ -293,15 +379,22 @@
             },
             
             resetOverlayToStart: function() {
-                document.getElementById('overlayTitle').innerText = "生物分類跑酷賽";
+                document.getElementById('overlay-header').classList.remove('hidden');
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('leaderboard-section').classList.add('hidden');
+                document.getElementById('btn-return').classList.add('hidden');
+                
+                document.getElementById('overlayTitle').innerText = "極速分類跑酷賽";
                 document.getElementById('overlayTitle').style.color = "var(--dora-blue)";
-                document.getElementById('overlayDesc').innerHTML = "準備好挑戰你的分類速度了嗎？<br><span class='text-sm text-[var(--dora-red)]'>在生物跑進危險區前，點擊正確的分類按鈕！</span>";
+                document.getElementById('overlayDesc').innerHTML = "愈快答對，分數愈高！<br><span class='text-sm text-[var(--dora-red)]'>小心別讓生物跑進危險區喔！</span>";
                 
                 const btnContainer = document.getElementById('overlayBtnContainer');
                 btnContainer.innerHTML = '';
+                btnContainer.classList.remove('hidden');
+                
                 const startBtn = document.createElement('button');
-                startBtn.className = 'btn-action w-full py-4 text-2xl';
-                startBtn.innerText = "開始挑戰！";
+                startBtn.className = 'btn-action w-full py-5 text-3xl';
+                startBtn.innerHTML = '<i class="fa-solid fa-play"></i> 開始挑戰！';
                 startBtn.onclick = () => this.start();
                 btnContainer.appendChild(startBtn);
             },
@@ -315,7 +408,7 @@
                 this.currentIndex = 0;
                 this.isPlaying = true;
                 
-                // 隨機打亂所有題目
+                // 隨機打亂題目
                 this.items = [...organisms].sort(() => Math.random() - 0.5);
                 
                 this.updateStats();
@@ -329,17 +422,16 @@
                 }
                 
                 this.position = 0;
-                // 速度隨著題數增加而變快，增加跑酷刺激感
-                this.speed = 0.25 + (this.currentIndex * 0.015); 
+                // 隨著題數稍微增加速度
+                this.speed = 0.35 + (this.currentIndex * 0.015); 
                 
                 const currentItem = this.items[this.currentIndex];
                 const runner = document.getElementById('runner');
                 const runnerImg = document.getElementById('runner-img');
                 
                 runnerImg.src = currentItem.img;
-                // 防止圖片破圖的防呆設計
                 runnerImg.onerror = function() {
-                    this.src = `https://placehold.co/100x100/4A90E2/FFF?text=${encodeURIComponent(currentItem.name)}`;
+                    this.src = `https://placehold.co/120x120/4A90E2/FFF?text=${encodeURIComponent(currentItem.name)}`;
                 };
                 document.getElementById('runner-name').innerText = currentItem.name;
                 
@@ -348,7 +440,7 @@
                 runner.classList.remove('hidden', 'pop-out', 'shake');
                 
                 clearInterval(this.timer);
-                this.timer = setInterval(() => this.tick(), 20); // 50fps 更新頻率
+                this.timer = setInterval(() => this.tick(), 20); 
             },
             
             tick: function() {
@@ -357,10 +449,9 @@
                 this.position += this.speed;
                 const runner = document.getElementById('runner');
                 
-                // 動態計算 left 以避免卡片超出 track 範圍
-                runner.style.left = `calc(${this.position}% - ${this.position * 1.1}px)`;
+                // 動態計算 left 避免跑出框外
+                runner.style.left = `calc(${this.position}% - ${this.position * 1.4}px)`;
                 
-                // 當移動超過 100% 視為掉入危險區 (未作答)
                 if (this.position >= 100) {
                     this.handleWrong();
                 }
@@ -372,11 +463,14 @@
                 const currentItem = this.items[this.currentIndex];
                 
                 if (category === currentItem.category) {
-                    // 答對邏輯
                     this.isPlaying = false;
                     clearInterval(this.timer);
                     
-                    this.score += 10;
+                    // 計算分數：距終點越遠分數越高
+                    let points = Math.floor(BASE_SCORE - (this.position * 45));
+                    if (points < MIN_SCORE) points = MIN_SCORE;
+                    
+                    this.score += points;
                     this.updateStats();
                     
                     const runner = document.getElementById('runner');
@@ -389,7 +483,14 @@
                         this.spawn();
                     }, 300);
                 } else {
-                    // 答錯邏輯
+                    // 答錯扣分並震動畫面
+                    this.score -= PENALTY;
+                    if (this.score < 0) this.score = 0;
+                    this.updateStats();
+                    
+                    document.getElementById('main-game-area').classList.add('main-shake');
+                    setTimeout(() => document.getElementById('main-game-area').classList.remove('main-shake'), 400);
+                    
                     this.handleWrong();
                 }
             },
@@ -409,8 +510,6 @@
                     if (this.lives <= 0) {
                         this.end(false);
                     } else {
-                        // 扣血後繼續同一題重新跑，或者換下一題？
-                        // 依據原始設計，扣血後換下一題
                         runner.style.display = 'none';
                         this.currentIndex++;
                         this.isPlaying = true;
@@ -424,13 +523,11 @@
                 document.getElementById('lives').innerText = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
             },
             
-            // 遊戲結束處理 (完全對應原始的 DOM 生成邏輯)
             end: function(isWin) {
                 this.isPlaying = false;
                 clearInterval(this.timer);
                 
-                const runner = document.getElementById('runner');
-                runner.style.display = 'none';
+                document.getElementById('runner').style.display = 'none';
                 document.getElementById('start-hint').style.display = 'flex';
                 
                 const overlay = document.getElementById('gameOverlay');
@@ -441,24 +538,42 @@
                 overlay.style.display = 'flex';
                 btnContainer.innerHTML = '';
                 
-                if (isWin) {
-                    title.innerText = "恭喜過關！";
-                    title.style.color = "#4CAF50"; // 成功綠色
-                    desc.innerText = `太強了！你已經精通原核生物與原生生物的分類囉！\n最終得分：${this.score}`;
+                if (isWin || this.currentIndex > 0) {
+                    // 即使失敗，只要有分數也讓學生登錄
+                    document.getElementById('overlay-header').classList.add('hidden');
+                    document.getElementById('login-form').classList.remove('hidden');
                     
-                    // 依照要求設定下一步按鈕的連結與文字
-                    const nextBtn = document.createElement('a');
-                    nextBtn.className = 'btn-red w-full py-4 px-8 text-xl no-underline block';
-                    nextBtn.innerText = "返回最終挑戰";
-                    nextBtn.href = "CLlll10switch.html";
-                    btnContainer.appendChild(nextBtn);
+                    let msg = isWin ? '太強了！過關！' : '挑戰結束！';
+                    document.getElementById('login-form').insertAdjacentHTML('afterbegin', 
+                        `<div class="mb-6">
+                            <h2 class="text-4xl font-black text-[var(--dora-red)] mb-2">${msg}</h2>
+                            <p class="text-2xl font-bold text-gray-600">最終得分：<span class="text-4xl text-[var(--dora-blue)]">${this.score}</span></p>
+                        </div>`
+                    );
+                    
+                    const submitBtn = document.createElement('button');
+                    submitBtn.className = 'btn-action w-full py-4 text-2xl';
+                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 登錄分數';
+                    submitBtn.onclick = () => submitToGAS();
+                    
+                    const skipBtn = document.createElement('button');
+                    skipBtn.className = 'btn-gray w-full py-4 text-2xl';
+                    skipBtn.innerHTML = '不登錄，直接返回';
+                    skipBtn.onclick = () => {
+                        document.getElementById('login-form').classList.add('hidden');
+                        btnContainer.classList.add('hidden');
+                        document.getElementById('btn-return').classList.remove('hidden');
+                    };
+                    
+                    btnContainer.appendChild(submitBtn);
+                    btnContainer.appendChild(skipBtn);
                 } else {
                     title.innerText = "挑戰失敗";
-                    title.style.color = "#EF5350"; // 失敗紅色
+                    title.style.color = "#EF5350";
                     desc.innerText = "別氣餒，生物分類需要多加練習，再試一次吧！";
                     
                     const retryBtn = document.createElement('button');
-                    retryBtn.className = 'btn-action w-full py-4 text-xl';
+                    retryBtn.className = 'btn-action w-full py-4 text-2xl';
                     retryBtn.innerText = "重新開始";
                     retryBtn.onclick = () => this.start();
                     btnContainer.appendChild(retryBtn);
@@ -466,7 +581,80 @@
             }
         };
 
-        // 頁面載入時初始化 overlay
+        // 提交分數至 Google Apps Script
+        async function submitToGAS() {
+            const cls = document.getElementById('stu-class').value.trim();
+            const seat = document.getElementById('stu-seat').value.trim();
+            
+            if (!cls || !seat) {
+                alert("請輸入班級與座號喔！");
+                return;
+            }
+            
+            // UI 切換
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('overlayBtnContainer').classList.add('hidden');
+            document.getElementById('leaderboard-section').classList.remove('hidden');
+            document.getElementById('btn-return').classList.remove('hidden');
+
+            // 準備請求 URL (透過 GET 傳遞參數以避免 CORS preflight)
+            const requestUrl = `${GAS_URL}?class=${encodeURIComponent(cls)}&seat=${encodeURIComponent(seat)}&score=${game.score}`;
+
+            try {
+                // 發送請求
+                const response = await fetch(requestUrl);
+                const result = await response.json(); // 假設 GAS 成功後回傳 JSON 排行榜陣列
+                
+                renderLeaderboard(result);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.getElementById('leaderboard-loading').innerHTML = `
+                    <div class="text-red-500 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> 成績已送出，但無法載入即時排行榜。</div>
+                    <div class="text-sm">可能原因：Apps Script 權限未完全開放或網路阻擋。</div>
+                `;
+            }
+        }
+
+        // 渲染排行榜表格
+        function renderLeaderboard(data) {
+            document.getElementById('leaderboard-loading').classList.add('hidden');
+            document.getElementById('leaderboard-table').classList.remove('hidden');
+            
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-gray-500">目前尚無排名資料</td></tr>';
+                return;
+            }
+            
+            // 確保只取前十名
+            const top10 = data.slice(0, 10);
+            
+            top10.forEach((row, index) => {
+                let rankClass = '';
+                let rankIcon = index + 1;
+                if (index === 0) { rankClass = 'rank-1'; rankIcon = '<i class="fa-solid fa-crown"></i> 1'; }
+                else if (index === 1) { rankClass = 'rank-2'; rankIcon = '2'; }
+                else if (index === 2) { rankClass = 'rank-3'; rankIcon = '3'; }
+
+                // 假設傳回的物件屬性為 { class: '701', seat: '05', score: 15000 }
+                // 根據您的描述調整欄位對應名稱，若有不同可自行更改
+                const rowClass = (row.class == document.getElementById('stu-class').value && row.seat == document.getElementById('stu-seat').value && row.score == game.score) 
+                                 ? 'bg-yellow-100 text-[var(--dora-red)]' : '';
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td class="${rankClass}">${rankIcon}</td>
+                        <td>${row.class || row['班級'] || '-'}</td>
+                        <td>${row.seat || row.num || row['座號'] || '-'}</td>
+                        <td class="text-[var(--dora-red)]">${row.score || row['分數'] || '0'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 頁面載入時初始化
         window.onload = () => {
             game.init();
         };
