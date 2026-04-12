@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>延伸閱讀：葉綠體傳奇</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            font-size: 20px; /* 大字體設定 */
+            line-height: 1.6;
+        }
+
+        /* 卡片共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 4px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 4px dashed var(--dora-yellow);
+            padding-bottom: 12px;
+        }
+
+        /* 閱讀文本區塊樣式 */
+        .act-box {
+            background-color: #f8fafc;
+            border-left: 6px solid var(--dora-blue);
+            padding: 20px;
+            border-radius: 0 16px 16px 0;
+            margin-bottom: 24px;
+        }
+        .act-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--dora-red);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 互動按鈕樣式 */
+        .btn-action {
+            background-color: var(--dora-blue);
+            color: white;
+            border-radius: 16px;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #0077AA;
+            transition: all 0.1s;
+            cursor: pointer;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 24px;
+            font-size: 22px;
+        }
+        .btn-action:active { transform: translateY(6px); box-shadow: 0 0 0 #0077AA; }
+        
+        .btn-red {
+            background-color: var(--dora-red);
+            color: white;
+            border-radius: 999px;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #B30015;
+            transition: all 0.1s;
+            cursor: pointer;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px 32px;
+            font-size: 26px;
+        }
+        .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
+
+        .btn-gray {
+            background-color: #9CA3AF;
+            color: white;
+            border-radius: 16px;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #6B7280;
+            transition: all 0.1s;
+            cursor: pointer;
+            padding: 16px 24px;
+            font-size: 22px;
+        }
+        .btn-gray:active { transform: translateY(6px); box-shadow: 0 0 0 #6B7280; }
+
+        /* 測驗選項按鈕 */
+        .option-btn {
+            background-color: white;
+            border: 3px solid var(--dora-blue);
+            color: #333;
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 var(--dora-blue);
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .option-btn:hover { background-color: #f0f9ff; }
+        .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--dora-blue); }
+        .option-label {
+            background-color: var(--dora-blue);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        /* 隱藏與動畫 */
+        .hidden-step { display: none; }
+        .fade-in { animation: fadeIn 0.4s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* 輸入框 */
+        .input-field {
+            width: 100%; padding: 20px; border-radius: 16px; border: 3px solid #cbd5e1;
+            font-size: 24px; font-weight: bold; margin-bottom: 16px; text-align: center;
+            transition: all 0.2s;
+        }
+        .input-field:focus { border-color: var(--dora-blue); outline: none; box-shadow: 0 0 0 4px rgba(0,150,214,0.2); }
+
+        /* 浮動提示框 */
+        #toast-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+            align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
+        .toast-card {
+            background: white; padding: 40px; border-radius: 24px; text-align: center;
+            max-width: 400px; width: 90%; font-weight: 900; font-size: 24px;
+            border: 6px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl md:text-3xl flex items-center gap-3">
+                <i class="fa-solid fa-book-open-reader"></i>
+                細胞內的「房客」
+            </div>
+            <!-- 已移除計分板徽章 -->
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <!-- ================= 閱讀文本區塊 ================= -->
+        <section id="reading-section" class="card-box fade-in">
+            <h1 class="text-4xl md:text-5xl font-black text-center text-[var(--dora-blue)] mb-6">🌿 葉綠體傳奇</h1>
+            <p class="text-2xl font-bold text-center text-gray-500 mb-8 pb-8 border-b-4 border-dashed border-gray-200">
+                一場跨越億年的「併購案」
+            </p>
+
+            <p class="mb-8 text-gray-800 font-bold leading-relaxed text-xl md:text-2xl">
+                想像一下，如果你的肚子裡住著一個會下廚的廚師，只要曬曬太陽就能幫你做好午餐，你是不是就不用辛苦覓食了？在微觀的生物世界裡，這真的發生過！
+            </p>
+
+            <div class="act-box">
+                <div class="act-title"><i class="fa-solid fa-id-card"></i> 第一幕：神祕的「身分證」</div>
+                <p class="text-gray-800">
+                    科學家在觀察植物和藻類的葉綠體時，發現了一個驚人的秘密：<strong>葉綠體竟然擁有自己獨立的 DNA 和核糖體</strong>，且長得跟一種叫做「藍綠藻」的細菌非常像！這就像是在一個大房子（細胞）裡，發現一間鎖著門的小房間，裡面住的人竟然拿著外國護照。
+                </p>
+            </div>
+
+            <div class="act-box">
+                <div class="act-title"><i class="fa-solid fa-compress"></i> 第二幕：第一次內共生——細菌變房客</div>
+                <p class="text-gray-800">
+                    生物學家馬古利斯（Lynn Margulis）因此提出了<strong>「內共生學說」</strong>：<br>在很久很久以前，一個巨大的原始真核細胞，張開大口吞下了一隻會光合作用的「藍綠藻」。神奇的是，大細胞沒有消化掉它，反而覺得：「嘿！留著你幫我製造食物也不錯！」於是，<strong>藍綠藻變成了長住的房客，最終演化成我們今天看到的葉綠體</strong>。
+                </p>
+            </div>
+
+            <div class="act-box">
+                <div class="act-title"><i class="fa-solid fa-object-group"></i> 第三幕：第二次內共生——房客的房客？</div>
+                <p class="text-gray-800">
+                    就在科學家以為解開謎題時，<strong>「眼蟲」</strong>出現了。眼蟲是一種很酷的原生生物，牠像動物一樣會游動，卻像植物一樣有葉綠體。<br><br>
+                    更奇怪的是，科學家發現眼蟲的葉綠體竟然有 3 到 4 層膜（一般的只有 2 層）！研究證實，眼蟲的祖先當年並不是吞下細菌，而是吞下了一整顆「已經擁有葉綠體的綠藻」。<br><br>
+                    這就像是一間大公司併購了一間小公司，而那間小公司原本就雇有一名廚師。這種「大吃小、小吃微」的現象，稱為<strong>「二次內共生」</strong>。這說明了生命的演化並非只是單純的競爭，更多時候是透過「合作」與「融合」來取得強大的生存技能。
+                </p>
+            </div>
+
+            <!-- 插入全版面寬圖片區塊 -->
+            <div class="w-full mt-10 mb-10 rounded-2xl overflow-hidden shadow-lg border-4 border-[var(--dora-blue)]">
+                <img src="Gemini_Generated_Image_1.png" alt="葉綠體內共生示意圖" class="w-full h-auto object-cover" onerror="this.src='https://placehold.co/800x400/4CAF50/FFF?text=葉綠體內共生(Gemini_Generated_Image_1)'">
+            </div>
+
+            <div class="text-center mt-12" id="start-btn-container">
+                <button class="btn-red w-full md:w-auto" onclick="startQuiz()">
+                    <i class="fa-solid fa-brain"></i> 我讀懂了，開始測驗挑戰！
+                </button>
+                <p class="text-gray-500 font-bold mt-4">⚠️ 準備好驗收你的閱讀成果了嗎？</p>
+            </div>
+        </section>
+
+        <!-- ================= 測驗區塊 ================= -->
+        <section id="quiz-section" class="hidden-step">
+            
+            <div class="bg-yellow-50 p-4 rounded-xl border-2 border-[var(--dora-yellow)] mb-6 font-bold text-gray-700 text-center shadow-inner">
+                💡 作答提示：你可以隨時往上滑動，去文章中尋找答案喔！
+            </div>
+
+            <!-- 題目 1 -->
+            <div id="q1-box" class="card-box fade-in">
+                <div class="bg-[var(--dora-yellow)] text-[var(--dora-red)] font-black px-4 py-2 rounded-lg inline-block mb-4">精選題組 1 / 3</div>
+                <h2 class="section-title text-3xl"><i class="fa-solid fa-magnifying-glass"></i> 證據搜尋（情節理解）</h2>
+                <p class="mb-6 font-bold text-2xl">根據文本，科學家為什麼會懷疑葉綠體原本是「外來者」，而不是細胞自己長出來的構造？</p>
+                
+                <div class="flex flex-col gap-4">
+                    <button class="option-btn" onclick="checkAnswer(1, 'A')"><div class="option-label">A</div> <div>因為葉綠體可以幫忙製造氧氣</div></button>
+                    <button class="option-btn" onclick="checkAnswer(1, 'B')"><div class="option-label">B</div> <div>因為葉綠體具有獨立的 DNA 且構造與細菌相似</div></button>
+                    <button class="option-btn" onclick="checkAnswer(1, 'C')"><div class="option-label">C</div> <div>因為葉綠體只存在於行光合作用的生物中</div></button>
+                    <button class="option-btn" onclick="checkAnswer(1, 'D')"><div class="option-label">D</div> <div>因為葉綠體可以隨意離開細胞獨立生活</div></button>
+                </div>
+            </div>
+
+            <!-- 題目 2 -->
+            <div id="q2-box" class="card-box hidden-step">
+                <div class="bg-[var(--dora-yellow)] text-[var(--dora-red)] font-black px-4 py-2 rounded-lg inline-block mb-4">精選題組 2 / 3</div>
+                <h2 class="section-title text-3xl"><i class="fa-solid fa-link"></i> 邏輯推論（關係判讀）</h2>
+                <p class="mb-2 font-bold text-2xl">關於「內共生」的發展順序，請根據文本完成下列表格的配對：</p>
+                
+                <!-- 選項庫提示 -->
+                <div class="bg-gray-100 p-4 rounded-xl border-2 border-gray-300 mb-6 font-bold text-xl text-gray-700">
+                    <span class="text-[var(--dora-blue)]"><i class="fa-solid fa-box-open"></i> 選項庫：</span><br>
+                    A. 藍綠藻（細菌）<br>
+                    B. 已經有葉綠體的藻類<br>
+                    C. 原始真核細胞
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-blue-50 p-6 rounded-xl border-2 border-[var(--dora-blue)]">
+                        <p class="font-black text-2xl mb-4 text-[var(--dora-blue)]">(1) 一次內共生「被吞下的主角」是誰？</p>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_1', 'A', this)">A</button>
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_1', 'B', this)">B</button>
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_1', 'C', this)">C</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 p-6 rounded-xl border-2 border-[var(--dora-red)]">
+                        <p class="font-black text-2xl mb-4 text-[var(--dora-red)]">(2) 二次內共生「被吞下的主角」是誰？</p>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_2', 'A', this)">A</button>
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_2', 'B', this)">B</button>
+                            <button class="btn-action flex-1 bg-white !text-gray-800 border-2 border-gray-300" onclick="checkSubQ2('q2_2', 'C', this)">C</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 題目 3 -->
+            <div id="q3-box" class="card-box hidden-step">
+                <div class="bg-[var(--dora-yellow)] text-[var(--dora-red)] font-black px-4 py-2 rounded-lg inline-block mb-4">精選題組 3 / 3</div>
+                <h2 class="section-title text-3xl"><i class="fa-solid fa-layer-group"></i> 層次辨析（素養判讀）</h2>
+                <p class="mb-4 font-bold text-2xl">下圖是小明根據文本畫出的「眼蟲演化簡圖」，請判斷箭頭 <span class="text-[var(--dora-red)] font-black">(甲)</span> 處最可能發生了什麼事？</p>
+                
+                <div class="bg-gray-100 p-6 rounded-xl text-center text-2xl font-black text-gray-700 tracking-widest mb-6 border-4 border-dashed border-gray-300">
+                    原始真核細胞 ➔ <span class="text-[var(--dora-red)] text-3xl">(甲)</span> ➔ 眼蟲
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button class="option-btn" onclick="checkAnswer(3, 'A')"><div class="option-label">A</div> <div>(甲) 處發生了一次內共生，吞入了藍綠藻</div></button>
+                    <button class="option-btn" onclick="checkAnswer(3, 'B')"><div class="option-label">B</div> <div>(甲) 處發生了二次內共生，吞入了綠藻</div></button>
+                    <button class="option-btn" onclick="checkAnswer(3, 'C')"><div class="option-label">C</div> <div>(甲) 處發生了突變，細胞自己長出了葉綠體</div></button>
+                    <button class="option-btn" onclick="checkAnswer(3, 'D')"><div class="option-label">D</div> <div>(甲) 處顯示眼蟲把葉綠體排出了體外</div></button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= 結算登錄區塊 ================= -->
+        <section id="end-section" class="hidden-step max-w-lg mx-auto">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl border-6 border-[var(--dora-blue)] text-center fade-in">
+                <i class="fa-solid fa-trophy text-6xl text-[var(--dora-yellow)] mb-4"></i>
+                <h2 class="text-4xl font-black text-[var(--dora-blue)] mb-6">全數通關！測驗完成！</h2>
+
+                <div class="border-t-4 border-dashed border-gray-200 pt-6">
+                    <p class="text-3xl font-black text-[var(--dora-blue)] mb-6">要登錄完成狀態嗎？</p>
+                    
+                    <div class="flex gap-4 mb-8">
+                        <input type="text" id="stu-class" class="input-field w-1/2" placeholder="班級 (例:701)">
+                        <input type="text" id="stu-seat" class="input-field w-1/2" placeholder="座號 (例:05)">
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        <button id="btn-submit" class="btn-action w-full py-5 text-3xl" onclick="submitResult()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> 登錄
+                        </button>
+                        <button class="btn-gray w-full py-4 text-2xl" onclick="skipAndReturn()">
+                            不登錄，直接返回
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 答題回饋提示 -->
+    <div id="toast-overlay">
+        <div id="toast-card" class="toast-card">
+            <i id="toast-icon" class="fa-solid text-6xl mb-4"></i>
+            <div id="toast-text" class="mt-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script URL
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxDxpDneO-ECgzZR754jySpIKXtEtOajbygRPrr50DueUzUMFflKRArK8dScFBuC2F1_w/exec";
+
+        let q2_1_ans = '';
+        let q2_2_ans = '';
+
+        function startQuiz() {
+            // 隱藏開始按鈕，但保留閱讀文本
+            document.getElementById('start-btn-container').style.display = 'none';
+            document.getElementById('quiz-section').style.display = 'block';
+            
+            // 平滑向下捲動到測驗區，讓學生知道題目出現了
+            document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showToast(isCorrect, message) {
+            const overlay = document.getElementById('toast-overlay');
+            const card = document.getElementById('toast-card');
+            const icon = document.getElementById('toast-icon');
+            const text = document.getElementById('toast-text');
+
+            if (isCorrect) {
+                icon.className = "fa-solid fa-circle-check text-green-500";
+                card.style.borderColor = "#4CAF50";
+                text.innerHTML = `<span class="text-green-600">${message}</span>`;
+            } else {
+                icon.className = "fa-solid fa-circle-xmark text-red-500";
+                card.style.borderColor = "#EF5350";
+                text.innerHTML = `<span class="text-red-600">${message}</span>`;
+                // 答錯震動回饋 (無計分)
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 400);
+            }
+
+            overlay.style.display = 'flex';
+            setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+        }
+
+        // Q1 與 Q3 選擇題共用邏輯
+        function checkAnswer(qNum, selected) {
+            let correctAns = '';
+            let nextBox = '';
+            
+            if (qNum === 1) {
+                correctAns = 'B';
+                nextBox = 'q2-box';
+            } else if (qNum === 3) {
+                correctAns = 'B';
+                nextBox = 'end-section';
+            }
+
+            if (selected === correctAns) {
+                showToast(true, '答對了！進入下一題！');
+                setTimeout(() => {
+                    document.getElementById(`q${qNum}-box`).style.display = 'none';
+                    if (qNum === 3) {
+                        finishQuiz();
+                    } else {
+                        document.getElementById(nextBox).style.display = 'block';
+                        // 確保新題目出現時能在畫面可視範圍內
+                        document.getElementById(nextBox).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 1000);
+            } else {
+                showToast(false, '答錯囉！<br><span class="text-lg text-gray-500 mt-2 block">請往上滑動文章找找線索吧！</span>');
+            }
+        }
+
+        // Q2 雙重選擇邏輯
+        function checkSubQ2(part, selected, btnElement) {
+            // UI 更新
+            const buttons = btnElement.parentElement.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.remove('bg-[var(--dora-blue)]', 'text-white', 'border-[var(--dora-blue)]');
+                b.classList.add('bg-white', '!text-gray-800', 'border-gray-300');
+            });
+            btnElement.classList.remove('bg-white', '!text-gray-800', 'border-gray-300');
+            btnElement.classList.add('bg-[var(--dora-blue)]', 'text-white', 'border-[var(--dora-blue)]');
+
+            // 紀錄答案
+            if (part === 'q2_1') q2_1_ans = selected;
+            if (part === 'q2_2') q2_2_ans = selected;
+
+            // 檢查是否兩題都答對
+            if (q2_1_ans && q2_2_ans) {
+                if (q2_1_ans === 'A' && q2_2_ans === 'B') {
+                    showToast(true, '配對完全正確！');
+                    setTimeout(() => {
+                        document.getElementById('q2-box').style.display = 'none';
+                        document.getElementById('q3-box').style.display = 'block';
+                        document.getElementById('q3-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 1000);
+                } else if (q2_1_ans !== 'A' && q2_2_ans !== 'B') {
+                    showToast(false, '兩個都配錯囉！請再檢查一次！');
+                    q2_1_ans = ''; q2_2_ans = '';
+                    resetQ2Buttons();
+                } else {
+                    showToast(false, '有一題配錯囉！再仔細看文本！');
+                    q2_1_ans = ''; q2_2_ans = '';
+                    resetQ2Buttons();
+                }
+            }
+        }
+
+        function resetQ2Buttons() {
+            document.querySelectorAll('#q2-box .btn-action').forEach(b => {
+                b.classList.remove('bg-[var(--dora-blue)]', 'text-white', 'border-[var(--dora-blue)]');
+                b.classList.add('bg-white', '!text-gray-800', 'border-gray-300');
+            });
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-section').style.display = 'none';
+            // 當完成時隱藏文本區塊，讓畫面專注在登錄按鈕上
+            document.getElementById('reading-section').style.display = 'none';
+            document.getElementById('end-section').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 提交與返回邏輯
+        async function submitResult() {
+            const cls = document.getElementById('stu-class').value.trim();
+            const seat = document.getElementById('stu-seat').value.trim();
+            
+            if (!cls || !seat) {
+                alert("請輸入班級與座號才能登錄喔！");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 登錄中...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+
+            // 準備 GET 請求 (傳送 class, seat, completed=1)
+            const requestUrl = `${GAS_URL}?class=${encodeURIComponent(cls)}&seat=${encodeURIComponent(seat)}&completed=1`;
+
+            try {
+                // 使用 no-cors 模式，因為我們只負責「把資料丟過去」，不需要讀取回傳值，這樣能避免跨網域阻擋問題。
+                await fetch(requestUrl, { mode: 'no-cors' });
+            } catch (error) {
+                console.log("送出時發生錯誤 (可忽略):", error);
+            }
+
+            // 無論 fetch 是否在背景成功，都直接導向下一頁
+            skipAndReturn();
+        }
+
+        function skipAndReturn() {
+            window.location.href = 'CLlll10switch.html';
+        }
+
+    </script>
+</body>
+</html>
