@@ -155,7 +155,6 @@
 
                 // 模擬轉場延遲，之後可替換成跳轉至第二頁的程式碼
                 setTimeout(() => {
-                    // 這裡可以換成 window.location.href = 'page2.html';
                     const confirmMsg = document.createElement('div');
                     confirmMsg.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
                     confirmMsg.innerHTML = `
@@ -166,11 +165,18 @@
                         </div>
                     `;
                     document.body.appendChild(confirmMsg);
+                
+                    // 👉 再延遲一段時間後跳轉
+                    setTimeout(() => {
+                        window.location.href = '/CLurnvalyfdoi02lunjfd.html';
+                    }, 1500); // 顯示1.5秒後跳轉
+                }, 1000);
+                
 
                     // 恢復按鈕狀態 (如果沒有真的跳轉頁面的話)
                     setTimeout(() => {
                         confirmMsg.remove();
-                        this.innerHTML = originalText;
+                        this.innerHTML = '/CLurnvalyfdoi02lunjfd.html';
                         this.style.pointerEvents = 'auto';
                     }, 2500);
 
