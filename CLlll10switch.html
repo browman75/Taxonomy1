@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>完成今日進度！選擇下一步</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dora-blue: #0096D6;
+            --dora-red: #E3001B;
+            --dora-yellow: #FFD900;
+            --pure-white: #FFFFFF;
+            --bg-color: #E8F6FC;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            font-size: 20px;
+            line-height: 1.6;
+            background-image: radial-gradient(rgba(0, 150, 214, 0.1) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        /* 主卡片樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 32px;
+            padding: 40px 24px;
+            box-shadow: 0 15px 30px rgba(0, 150, 214, 0.15);
+            border: 6px solid var(--pure-white);
+            position: relative;
+        }
+
+        /* 選擇任務卡片 */
+        .mission-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            border-radius: 24px;
+            border: 4px solid transparent;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            background-color: white;
+            text-align: center;
+            gap: 12px;
+        }
+        
+        /* 各任務專屬配色與立體陰影 */
+        .card-blue {
+            border-color: var(--dora-blue);
+            color: var(--dora-blue);
+            box-shadow: 0 8px 0 var(--dora-blue), 0 15px 20px rgba(0,0,0,0.1);
+        }
+        .card-blue:active { transform: translateY(8px); box-shadow: 0 0 0 var(--dora-blue), 0 5px 10px rgba(0,0,0,0.1); }
+        .card-blue:hover { background-color: #E8F6FC; }
+
+        .card-red {
+            border-color: var(--dora-red);
+            color: var(--dora-red);
+            box-shadow: 0 8px 0 #B30015, 0 15px 20px rgba(0,0,0,0.1);
+        }
+        .card-red:active { transform: translateY(8px); box-shadow: 0 0 0 #B30015, 0 5px 10px rgba(0,0,0,0.1); }
+        .card-red:hover { background-color: #FFF0F0; }
+
+        .card-green {
+            border-color: #10B981;
+            color: #10B981;
+            box-shadow: 0 8px 0 #059669, 0 15px 20px rgba(0,0,0,0.1);
+        }
+        .card-green:active { transform: translateY(8px); box-shadow: 0 0 0 #059669, 0 5px 10px rgba(0,0,0,0.1); }
+        .card-green:hover { background-color: #ECFDF5; }
+
+        .card-locked {
+            border-color: #9CA3AF;
+            color: #9CA3AF;
+            background-color: #F3F4F6;
+            box-shadow: 0 8px 0 #6B7280;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+            opacity: 0.8;
+        }
+
+        /* 動畫特效 */
+        .pop-in { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn {
+            0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .float { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 撒花特效背景 */
+        .confetti-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 150px;
+            overflow: hidden; pointer-events: none; border-radius: 32px 32px 0 0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 py-12">
+
+    <main class="w-full max-w-3xl mx-auto relative z-10 pop-in">
+        
+        <div class="card-box relative">
+            
+            <!-- 撒花裝飾背景 -->
+            <div class="confetti-container" id="confetti"></div>
+
+            <!-- 慶祝標題區 -->
+            <div class="text-center relative z-10 mb-10">
+                <div class="inline-block bg-[var(--dora-yellow)] p-4 rounded-full border-4 border-white shadow-lg mb-4 float">
+                    <i class="fa-solid fa-trophy text-6xl text-[var(--dora-red)]"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-black text-[var(--dora-blue)] mb-4 tracking-wide">
+                    太棒了！過關！
+                </h1>
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 md:p-6 shadow-sm inline-block w-full max-w-2xl text-left">
+                    <p class="text-gray-800 font-bold text-xl md:text-2xl leading-relaxed text-center">
+                        <i class="fa-solid fa-star text-[var(--dora-yellow)] text-2xl mr-2"></i> 
+                        恭喜你已經完成今日進度！
+                    </p>
+                    <p class="text-gray-600 font-bold mt-4 text-lg md:text-xl text-center">
+                        接下來你有四個選擇，每做完一個進度，還是可以隨時回來這裡繼續完成其他的部分喔！你想先挑戰哪一個呢？
+                    </p>
+                </div>
+            </div>
+
+            <!-- 任務選擇區 (2x2 網格) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10 px-2 md:px-6">
+                
+                <!-- 選項 1：生物分類挑戰 -->
+                <a href="CLjjeijl1122fdse.html" class="mission-card card-blue">
+                    <i class="fa-solid fa-gamepad text-6xl mb-2"></i>
+                    <div class="font-black text-2xl md:text-3xl">生物分類挑戰</div>
+                    <div class="text-base md:text-lg font-bold text-gray-500">極速跑酷！挑戰排行榜！</div>
+                </a>
+
+                <!-- 選項 2：延伸閱讀 -->
+                <a href="CLhuwqi1221uhe.html" class="mission-card card-red">
+                    <i class="fa-solid fa-book-open-reader text-6xl mb-2"></i>
+                    <div class="font-black text-2xl md:text-3xl">延伸閱讀題</div>
+                    <div class="text-base md:text-lg font-bold text-gray-500">探索葉綠體的神祕身世</div>
+                </a>
+
+                <!-- 選項 3：新的學習內容 -->
+                <a href="CLjvlfdQ01fjdu.html" class="mission-card card-green">
+                    <i class="fa-solid fa-rocket text-6xl mb-2"></i>
+                    <div class="font-black text-2xl md:text-3xl">新的學習單元</div>
+                    <div class="text-base md:text-lg font-bold text-gray-500">繼續探索未知的生物界</div>
+                </a>
+
+                <!-- 選項 4：Kahoot (鎖定狀態) -->
+                <div class="mission-card card-locked" onclick="alert(' Kahoot 關卡正在建置中，敬請期待喔！')">
+                    <div class="relative">
+                        <i class="fa-solid fa-mobile-screen-button text-6xl mb-2"></i>
+                        <i class="fa-solid fa-lock absolute -bottom-2 -right-2 text-2xl text-gray-600 bg-gray-200 rounded-full p-1"></i>
+                    </div>
+                    <div class="font-black text-2xl md:text-3xl">Kahoot 練習</div>
+                    <div class="text-base md:text-lg font-bold text-gray-500">關卡建置中・敬請期待</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 簡單的紙花特效腳本 -->
+    <script>
+        function createConfetti() {
+            const colors = ['#0096D6', '#E3001B', '#FFD900', '#4CAF50'];
+            const container = document.getElementById('confetti');
+            
+            for(let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                confetti.style.position = 'absolute';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.backgroundColor = color;
+                confetti.style.top = '-20px';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.opacity = Math.random();
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                const animationDuration = Math.random() * 3 + 2;
+                confetti.style.animation = `fall ${animationDuration}s linear infinite`;
+                
+                container.appendChild(confetti);
+            }
+        }
+
+        // 動態生成 CSS 動畫
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(200px) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 載入時觸發
+        window.onload = createConfetti;
+    </script>
+</body>
+</html>
