@@ -153,6 +153,148 @@
                 this.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-3xl md:text-4xl"></i> 縮小中...';
                 this.style.pointerEvents = 'none'; // 防止重複點擊
 
+                // 模擬轉場延遲，跳轉至第二頁
+                setTimeout(() => {
+                    const confirmMsg = document.createElement('div');
+                    confirmMsg.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
+                    confirmMsg.innerHTML = `
+                        <div class="bg-white p-8 rounded-3xl text-center max-w-sm mx-4 transform scale-110 transition-transform">
+                            <i class="fa-solid fa-check-circle text-[var(--dora-blue)] text-6xl mb-4"></i>
+                            <h2 class="text-3xl font-black text-[var(--dora-red)] mb-2">出發囉！</h2>
+                            <p class="text-xl font-bold">即將進入「原核生物界」...</p>
+                        </div>
+                    `;
+                    document.body.appendChild(confirmMsg);
+
+                    // 👉 正確的相對路徑跳轉（拿掉最前面的斜線）
+                    setTimeout(() => {
+                        window.location.href = 'CLurnvalyfdoi02lunjfd.html';
+                    }, 1500); 
+
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>            background-color: var(--dora-blue);
+            /* 多層陰影創造空間感與光暈 */
+            box-shadow: 0 0 0 15px rgba(0, 150, 214, 0.2), 
+                        inset 0 0 40px rgba(0,0,0,0.3);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* 上下漂浮動畫，增加生命力 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* 紅色大標題的白色描邊效果，確保在任何背景都清晰 */
+        .title-stroke {
+            color: var(--dora-red);
+            text-shadow: 
+                3px 3px 0 var(--pure-white),
+               -3px -3px 0 var(--pure-white),  
+                3px -3px 0 var(--pure-white),
+               -3px  3px 0 var(--pure-white),
+                0px  4px 8px rgba(0,0,0,0.2);
+            letter-spacing: 2px;
+        }
+
+        /* 巨大的黃色互動按鈕 */
+        .btn-yellow {
+            background-color: var(--dora-yellow);
+            color: var(--dora-red);
+            /* 立體按鈕邊緣 */
+            box-shadow: 0 8px 0 #D4B400, 0 15px 20px rgba(0,0,0,0.2);
+            transition: all 0.1s ease-out;
+            /* 確保觸控範圍夠大 */
+            min-height: 64px;
+            min-width: 200px;
+        }
+
+        /* 按下按鈕時的回饋效果 */
+        .btn-yellow:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #D4B400, 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* 背景可愛網點裝飾 */
+        .bg-dots {
+            background-image: radial-gradient(rgba(0, 150, 214, 0.15) 3px, transparent 3px);
+            background-size: 30px 30px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center relative bg-dots">
+
+    <!-- 主內容區塊 -->
+    <main class="relative z-10 container mx-auto px-4 flex flex-col items-center justify-center w-full max-w-3xl">
+        
+        <!-- 主視覺：藍色大型圓形 -->
+        <div class="portal-circle rounded-full w-[85vw] h-[85vw] max-w-[480px] max-h-[480px] flex flex-col items-center justify-center relative mt-12 md:mt-8">
+            
+            <!-- 紅色大標題：微觀生物大探險 -->
+            <div class="absolute -top-10 md:-top-14 w-[120%] text-center z-20">
+                <h1 class="title-stroke text-4xl md:text-5xl font-black">
+                    微觀生物大探險
+                </h1>
+            </div>
+
+            <!-- 教學引導文字 (放置於白色圓角卡片中以利閱讀) -->
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl w-[85%] md:w-[90%] border-4 border-white mt-8 md:mt-12 relative z-10">
+                
+                <!-- 裝飾小 icon -->
+                <div class="absolute -top-6 -left-4 bg-white rounded-full p-2 shadow-md">
+                    <i class="fa-solid fa-magnifying-glass text-3xl text-[var(--dora-blue)]"></i>
+                </div>
+
+                <p class="text-gray-800 font-bold text-[22px] md:text-2xl leading-relaxed text-left">
+                    地球上有許多肉眼看不見或常被誤認的小生命！
+                    <br><br>
+                    今天我們要用縮小燈，一起去認識
+                    <span class="inline-block bg-[#FFF0F0] text-[var(--dora-red)] px-2 rounded-lg">『原核生物』</span>、
+                    <span class="inline-block bg-[#FFF0F0] text-[var(--dora-red)] px-2 rounded-lg mt-1">『原生生物』</span>和
+                    <span class="inline-block bg-[#FFF0F0] text-[var(--dora-red)] px-2 rounded-lg mt-1">『真菌』</span>
+                    三大家族！
+                </p>
+                
+                <div class="mt-6 text-center">
+                    <span class="text-[var(--dora-blue)] font-black text-2xl md:text-3xl animate-pulse inline-block">
+                        準備好出發了嗎？
+                    </span>
+                </div>
+            </div>
+            
+            <!-- 裝飾用星星 -->
+            <i class="fa-solid fa-star absolute bottom-8 left-8 text-[var(--dora-yellow)] text-3xl opacity-80 animate-bounce" style="animation-delay: 0.5s;"></i>
+            <i class="fa-solid fa-star absolute top-1/2 right-6 text-[var(--dora-yellow)] text-4xl opacity-80 animate-bounce" style="animation-delay: 1s;"></i>
+
+        </div>
+
+        <!-- 互動按鈕：啟動縮小燈 -->
+        <button id="start-btn" class="btn-yellow mt-16 md:mt-20 px-10 py-5 rounded-full font-black text-2xl md:text-[32px] flex items-center justify-center gap-4 cursor-pointer">
+            <i class="fa-solid fa-rocket text-3xl md:text-4xl"></i>
+            啟動縮小燈！
+        </button>
+
+    </main>
+
+    <!-- 簡單的互動邏輯 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('start-btn');
+
+            // 支援 iPad 點擊與觸控
+            startBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 點擊後改變按鈕狀態，給予視覺回饋
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-3xl md:text-4xl"></i> 縮小中...';
+                this.style.pointerEvents = 'none'; // 防止重複點擊
+
                 // 模擬轉場延遲，之後可替換成跳轉至第二頁的程式碼
                 setTimeout(() => {
                     const confirmMsg = document.createElement('div');
