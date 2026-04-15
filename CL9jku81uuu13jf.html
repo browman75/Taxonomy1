@@ -92,20 +92,100 @@
             font-weight: bold;
         }
 
-        /* 檢索表列樣式 */
-        .key-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px dashed #cbd5e1;
-            gap: 12px;
+        /* ---------------------------------
+           由左至右「水平樹狀圖」核心樣式
+           --------------------------------- */
+        .tree-container {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 20px 0 20px 20px;
+            /* 讓滾動軸更滑順 */
+            -webkit-overflow-scrolling: touch; 
         }
-        .key-row:last-child { border-bottom: none; }
-        .key-num { font-weight: 900; color: var(--dora-red); width: 40px; flex-shrink: 0;}
-        .key-desc { flex-grow: 1; font-weight: bold; color: #333; }
-        .key-dots { flex-grow: 2; border-bottom: 2px dotted #9ca3af; margin: 0 12px; opacity: 0.5; }
-        .key-target { font-weight: 900; color: var(--dora-blue); width: 120px; text-align: right; flex-shrink: 0;}
+        
+        .tree, .tree ul, .tree li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tree ul {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding-left: 50px; /* 層級之間的水平距離 */
+            position: relative;
+        }
+
+        .tree li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            position: relative;
+            padding: 10px 0; /* 分支之間的垂直距離 */
+        }
+
+        /* 進入節點的水平連接線 */
+        .tree li::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -50px;
+            width: 50px;
+            height: 3px;
+            background: #9ca3af;
+        }
+
+        /* 連接兄弟節點的垂直連接線 */
+        .tree li::after {
+            content: '';
+            position: absolute;
+            left: -50px;
+            bottom: 50%;
+            height: 100%;
+            width: 3px;
+            background: #9ca3af;
+        }
+
+        .tree li:first-child::after {
+            top: 50%;
+            height: 50%;
+            bottom: auto;
+        }
+
+        .tree li:last-child::after {
+            bottom: 50%;
+            height: 50%;
+        }
+
+        /* 如果只有一個子節點，不需要垂直線 */
+        .tree li:only-child::after {
+            display: none;
+        }
+
+        /* 根節點不需要左側的線條 */
+        .tree > ul { padding-left: 0; }
+        .tree > ul > li::before, .tree > ul > li::after { display: none; }
+
+        /* 樹狀圖節點樣式 */
+        .tree-node {
+            background-color: white;
+            border: 3px solid var(--dora-blue);
+            color: var(--dora-blue);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 18px;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        /* --------------------------------- */
 
         /* 字卡與放置區樣式 */
         .bac-card {
@@ -121,14 +201,15 @@
         }
         
         .drop-zone { 
-            width: 140px; height: 44px; background-color: #f8fafc; border: 2px dashed #9ca3af;
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; cursor: pointer; flex-shrink: 0;
+            width: 150px; height: 54px; background-color: #f8fafc; border: 3px dashed #9ca3af;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; cursor: pointer; flex-shrink: 0; position: relative; z-index: 2;
         }
         .drop-zone:hover { background-color: #e2e8f0; border-color: var(--dora-blue); }
         .drop-zone .bac-card {
             margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent; width: 100%; height: 100%;
         }
+        .placeholder-text { font-size: 16px; color: #6b7280; font-weight: bold; }
 
         /* 提示彈跳視窗 */
         #toast-modal {
@@ -140,7 +221,6 @@
             max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="pb-24">
@@ -164,7 +244,7 @@
             <div class="bg-yellow-50 p-4 rounded-xl border border-[var(--dora-yellow)] mb-6 shadow-sm">
                 <p class="font-bold text-gray-800">
                     系統已經為你從 6 大分類中，<span class="text-[var(--dora-red)]">各隨機抽出了 1 種生物（共 6 個）</span>。<br>
-                    請點選上方的生物字卡，並依據下方的「二分叉檢索表」特徵，將它們放入正確的分類空框中！
+                    請點選上方的生物字卡，順著下方「由左至右」的檢索表路線，將它們放入正確的分類空框中！
                 </p>
             </div>
 
@@ -176,65 +256,97 @@
                 </div>
             </div>
 
-            <!-- 二分叉檢索表 -->
-            <div class="bg-white p-4 md:p-6 rounded-xl border-2 border-gray-300 shadow-sm">
-                <h3 class="font-black text-xl text-center mb-4 bg-gray-100 py-2 rounded-lg text-gray-600">生物分類二分叉檢索表</h3>
+            <!-- 水平樹狀圖二分叉檢索表 -->
+            <div class="bg-white p-2 rounded-xl border-2 border-gray-300 shadow-sm relative">
+                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">生物分類二分叉檢索表</h3>
+                <p class="text-center text-sm font-bold text-[var(--dora-red)] mb-2 animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> 若畫面超出，可左右滑動查看完整檢索表</p>
                 
-                <div class="flex flex-col gap-1 text-sm md:text-lg">
-                    <!-- 1 -->
-                    <div class="key-row">
-                        <div class="key-num">1a</div><div class="key-desc">具有細胞構造</div><div class="key-dots"></div><div class="key-target">前往 2</div>
-                    </div>
-                    <div class="key-row bg-red-50 rounded-lg">
-                        <div class="key-num">1b</div><div class="key-desc">不具細胞構造</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="virus" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入病毒</span></div>
-                    </div>
-                    
-                    <!-- 2 -->
-                    <div class="key-row mt-2">
-                        <div class="key-num">2a</div><div class="key-desc">具有細胞核 (真核生物)</div><div class="key-dots"></div><div class="key-target">前往 3</div>
-                    </div>
-                    <div class="key-row">
-                        <div class="key-num">2b</div><div class="key-desc">不具細胞核 (原核生物)</div><div class="key-dots"></div><div class="key-target">前往 4</div>
-                    </div>
-
-                    <!-- 3 -->
-                    <div class="key-row mt-2">
-                        <div class="key-num">3a</div><div class="key-desc">具有細胞壁</div><div class="key-dots"></div><div class="key-target">前往 5</div>
-                    </div>
-                    <div class="key-row bg-blue-50 rounded-lg">
-                        <div class="key-num">3b</div><div class="key-desc">不具細胞壁</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="protozoa" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入原生動物</span></div>
-                    </div>
-
-                    <!-- 4 -->
-                    <div class="key-row mt-2 bg-green-50 rounded-t-lg">
-                        <div class="key-num">4a</div><div class="key-desc">含有葉綠素，可行光合作用</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="cyano" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入藍菌</span></div>
-                    </div>
-                    <div class="key-row bg-gray-50 rounded-b-lg">
-                        <div class="key-num">4b</div><div class="key-desc">不含葉綠素</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="bacteria" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入細菌</span></div>
-                    </div>
-
-                    <!-- 5 -->
-                    <div class="key-row mt-2 bg-green-50 rounded-t-lg">
-                        <div class="key-num">5a</div><div class="key-desc">含有葉綠體，可行光合作用</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="algae" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入藻類</span></div>
-                    </div>
-                    <div class="key-row bg-orange-50 rounded-b-lg">
-                        <div class="key-num">5b</div><div class="key-desc">無葉綠體，以分解有機物維生</div><div class="key-dots"></div>
-                        <div class="drop-zone" data-accept="slime" onclick="handleZoneClick(this)"><span class="text-xs text-gray-400 font-bold pointer-events-none">放入原生菌</span></div>
+                <div class="tree-container">
+                    <div class="tree min-w-max">
+                        <ul>
+                            <li>
+                                <!-- 樹根 -->
+                                <div class="tree-node !bg-[var(--dora-blue)] !text-white">待鑑定生物</div>
+                                <ul>
+                                    <!-- 1a 具有細胞構造 -->
+                                    <li>
+                                        <div class="tree-node">具有細胞構造</div>
+                                        <ul>
+                                            <!-- 2a 具細胞核 -->
+                                            <li>
+                                                <div class="tree-node">具有細胞核<br><span class="text-sm font-normal">(真核生物)</span></div>
+                                                <ul>
+                                                    <!-- 3a 具細胞壁 -->
+                                                    <li>
+                                                        <div class="tree-node">具有細胞壁</div>
+                                                        <ul>
+                                                            <!-- 5a 有葉綠體 -->
+                                                            <li>
+                                                                <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠體<br><span class="text-sm font-normal">可行光合作用</span></div>
+                                                                <ul>
+                                                                    <li><div class="drop-zone" data-accept="algae" onclick="handleZoneClick(this)"><span class="placeholder-text">放入藻類</span></div></li>
+                                                                </ul>
+                                                            </li>
+                                                            <!-- 5b 無葉綠體 -->
+                                                            <li>
+                                                                <div class="tree-node border-orange-500 text-orange-700 bg-orange-50">無葉綠體<br><span class="text-sm font-normal">分解有機物維生</span></div>
+                                                                <ul>
+                                                                    <li><div class="drop-zone" data-accept="slime" onclick="handleZoneClick(this)"><span class="placeholder-text">放入原生菌</span></div></li>
+                                                                </ul>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <!-- 3b 不具細胞壁 -->
+                                                    <li>
+                                                        <div class="tree-node">不具細胞壁</div>
+                                                        <ul>
+                                                            <li><div class="drop-zone" data-accept="protozoa" onclick="handleZoneClick(this)"><span class="placeholder-text">放入原生動物</span></div></li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <!-- 2b 不具細胞核 -->
+                                            <li>
+                                                <div class="tree-node">不具細胞核<br><span class="text-sm font-normal">(原核生物)</span></div>
+                                                <ul>
+                                                    <!-- 4a 含有葉綠素 -->
+                                                    <li>
+                                                        <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠素<br><span class="text-sm font-normal">可行光合作用</span></div>
+                                                        <ul>
+                                                            <li><div class="drop-zone" data-accept="cyano" onclick="handleZoneClick(this)"><span class="placeholder-text">放入藍菌</span></div></li>
+                                                        </ul>
+                                                    </li>
+                                                    <!-- 4b 不含葉綠素 -->
+                                                    <li>
+                                                        <div class="tree-node border-gray-400 text-gray-700 bg-gray-50">不含葉綠素</div>
+                                                        <ul>
+                                                            <li><div class="drop-zone" data-accept="bacteria" onclick="handleZoneClick(this)"><span class="placeholder-text">放入細菌</span></div></li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <!-- 1b 不具細胞構造 -->
+                                    <li>
+                                        <div class="tree-node border-red-500 text-red-700 bg-red-50">不具細胞構造</div>
+                                        <ul>
+                                            <li><div class="drop-zone" data-accept="virus" onclick="handleZoneClick(this)"><span class="placeholder-text">放入病毒</span></div></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-                <div class="mt-8 text-center">
+                <div class="mt-8 text-center pb-4">
                     <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers()">
                         <i class="fa-solid fa-clipboard-check"></i> 鑑定完成，送出檢查！
                     </button>
                 </div>
                 
-                <div id="success-feedback" class="hidden-step highlight-box mt-6 text-center">
+                <div id="success-feedback" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
                     <i class="fa-solid fa-crown text-[var(--dora-yellow)] text-4xl mb-2"></i><br>
                     <span class="text-2xl font-black text-[var(--dora-red)]">太厲害了！你完全精通生物分類了！</span><br>
                     二分叉檢索表是科學家鑑定生物的絕佳工具，恭喜你成功解鎖下一關！
@@ -369,7 +481,7 @@
             });
 
             if (!isComplete) {
-                showToast(false, '任務未完成', '請把上方 6 張字卡，都放入檢索表的對應空格中喔！');
+                showToast(false, '任務未完成', '請把上方 6 張字卡，都放入樹狀圖最右側的對應空格中喔！');
                 return;
             }
 
@@ -384,7 +496,7 @@
                     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
                 }, 300);
             } else {
-                showToast(false, '分類有誤喔！', '請跟著檢索表的特徵，從 1a/1b 重新順著路線往下找找看是哪裡出錯了。');
+                showToast(false, '分類有誤喔！', '請順著樹狀圖的特徵路線，從左到右重新檢查看看是哪個步驟走錯了。');
             }
         }
 
