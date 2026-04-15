@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>第七站：生物分類跑酷賽</title>
+    <title>生物分類：二分叉檢索表</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
@@ -19,44 +19,63 @@
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.6;
             background-color: var(--bg-color);
-            margin: 0;
-            user-select: none;
+            color: #333;
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
-            touch-action: pan-y;
         }
 
-        /* 按鈕共用樣式 */
+        .card-box {
+            background-color: var(--pure-white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 150, 214, 0.1);
+            border: 3px solid rgba(0, 150, 214, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: var(--dora-blue);
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px dashed var(--dora-yellow);
+            padding-bottom: 8px;
+        }
+
         .btn-action {
             background-color: var(--dora-blue);
             color: white;
-            border-radius: 16px;
-            font-weight: 900;
-            box-shadow: 0 6px 0 #0077AA;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #0077AA;
             transition: all 0.1s;
             cursor: pointer;
-            text-align: center;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
-        .btn-action:active { transform: translateY(6px); box-shadow: 0 0 0 #0077AA; }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #0077AA; }
         
         .btn-red {
             background-color: var(--dora-red);
+            box-shadow: 0 6px 0 #B30015;
             color: white;
             border-radius: 999px;
+            padding: 16px 32px;
+            font-size: 24px;
             font-weight: 900;
-            box-shadow: 0 6px 0 #B30015;
-            transition: all 0.1s;
             cursor: pointer;
-            text-align: center;
+            transition: all 0.1s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             text-decoration: none;
         }
         .btn-red:active { transform: translateY(6px); box-shadow: 0 0 0 #B30015; }
@@ -64,488 +83,589 @@
         .btn-gray {
             background-color: #9CA3AF;
             color: white;
-            border-radius: 16px;
+            border-radius: 12px;
             font-weight: 900;
-            box-shadow: 0 6px 0 #6B7280;
+            box-shadow: 0 4px 0 #6B7280;
             transition: all 0.1s;
             cursor: pointer;
-        }
-        .btn-gray:active { transform: translateY(6px); box-shadow: 0 0 0 #6B7280; }
-
-        /* 分類選項按鈕 (放大版) */
-        .category-btn {
-            background-color: white;
-            border: 4px solid var(--dora-blue);
-            color: var(--dora-blue);
-            border-radius: 20px;
-            padding: 16px 8px;
-            font-size: 20px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: all 0.1s;
-            box-shadow: 0 6px 0 var(--dora-blue);
-            display: flex;
-            flex-direction: column;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            line-height: 1.4;
-            min-height: 110px;
+            gap: 8px;
         }
-        .category-btn:hover { background-color: #f0f9ff; }
-        .category-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--dora-blue); }
+        .btn-gray:active { transform: translateY(4px); box-shadow: 0 0 0 #6B7280; }
 
-        /* 跑酷區與生物卡片 */
-        .track-area {
+        .hidden-step { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box {
+            background-color: #FFF9C4;
+            border-left: 6px solid var(--dora-yellow);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        /* ---------------------------------
+           由左至右「水平樹狀圖」核心樣式
+           --------------------------------- */
+        .tree-container {
             width: 100%;
-            height: 250px;
-            background: #e2e8f0;
-            border-radius: 24px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
-            border: 4px dashed #cbd5e1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 20px 0 20px 20px;
+            -webkit-overflow-scrolling: touch; 
         }
         
-        .runner {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            left: 0;
-            background: white;
-            padding: 10px;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            border: 4px solid var(--dora-blue);
+        .tree, .tree ul, .tree li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tree ul {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            width: 140px;
-            z-index: 10;
-        }
-        .runner img {
-            width: 110px;
-            height: 110px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 8px;
+            align-items: flex-start;
+            padding-left: 50px; 
+            position: relative;
         }
 
-        /* 終點警示區 */
-        .danger-zone {
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 50px;
-            background: repeating-linear-gradient(
-                45deg,
-                #ffcccc,
-                #ffcccc 15px,
-                #ff9999 15px,
-                #ff9999 30px
-            );
-            border-left: 6px solid var(--dora-red);
-            opacity: 0.8;
+        .tree li {
             display: flex;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
+            position: relative;
+            padding: 10px 0; 
         }
 
-        /* 動畫特效 */
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, -50%, 0); }
-            20%, 80% { transform: translate3d(4px, -50%, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, -50%, 0); }
-            40%, 60% { transform: translate3d(8px, -50%, 0); }
-        }
-        .main-shake { animation: mainShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes mainShake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(4px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-            40%, 60% { transform: translate3d(8px, 0, 0); }
+        .tree li::before {
+            content: ''; position: absolute; top: 50%; left: -50px;
+            width: 50px; height: 3px; background: #9ca3af;
         }
 
-        .pop-out { animation: popOut 0.3s ease-out forwards; }
-        @keyframes popOut {
-            0% { transform: translateY(-50%) scale(1); opacity: 1; }
-            100% { transform: translateY(-100%) scale(1.5); opacity: 0; }
+        .tree li::after {
+            content: ''; position: absolute; left: -50px; bottom: 50%;
+            height: 100%; width: 3px; background: #9ca3af;
         }
 
-        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .tree li:first-child::after { top: 50%; height: 50%; bottom: auto; }
+        .tree li:last-child::after { bottom: 50%; height: 50%; }
+        .tree li:only-child::after { display: none; }
+        .tree > ul { padding-left: 0; }
+        .tree > ul > li::before, .tree > ul > li::after { display: none; }
+
+        .tree-node {
+            background-color: white; border: 3px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 10px 16px; border-radius: 12px; font-weight: 900; white-space: nowrap;
+            position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 18px; line-height: 1.4; text-align: center;
         }
 
-        /* 提示彈跳視窗與結果視窗 */
+        /* 字卡與放置區樣式 (任務一) */
+        .bac-card {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 18px; margin: 4px;
+        }
+        .bac-card:active { transform: scale(0.95); }
+        .bac-card.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        
+        .drop-zone { 
+            width: 150px; height: 54px; background-color: #f8fafc; border: 3px dashed #9ca3af;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; cursor: pointer; flex-shrink: 0; position: relative; z-index: 2;
+        }
+        .drop-zone:hover { background-color: #e2e8f0; border-color: var(--dora-blue); }
+        .drop-zone .bac-card {
+            margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent; width: 100%; height: 100%;
+        }
+
+        /* 字卡與放置區樣式 (任務二特徵版) */
+        .bac-card-t2 {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 6px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 16px; margin: 4px;
+            width: 170px; height: 70px; line-height: 1.3; text-align: center;
+        }
+        .bac-card-t2:active { transform: scale(0.95); }
+        .bac-card-t2.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        .drop-zone-t2 { 
+            width: 180px; height: 80px; background-color: #f8fafc; border: 3px dashed #9ca3af;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; cursor: pointer; flex-shrink: 0; position: relative; z-index: 2;
+        }
+        .drop-zone-t2:hover { background-color: #e2e8f0; border-color: var(--dora-blue); }
+        .drop-zone-t2 .bac-card-t2 {
+            margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent; width: 100%; height: 100%;
+        }
+        .drop-zone-t2 .bac-card-t2 span { color: rgba(255,255,255,0.8); }
+
+        .placeholder-text { font-size: 16px; color: #9ca3af; font-weight: bold; }
+
+        /* 提示彈跳視窗與結束登錄視窗 */
         .overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 60;
             align-items: center; justify-content: center; backdrop-filter: blur(4px);
         }
         .overlay-content {
             background: white; padding: 40px 30px; border-radius: 32px; text-align: center;
             max-width: 500px; width: 90%; border: 6px solid var(--dora-blue);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;
         }
-
-        /* 輸入框 */
+        
         .input-field {
             width: 100%; padding: 16px; border-radius: 16px; border: 3px solid #cbd5e1;
             font-size: 20px; font-weight: bold; margin-bottom: 16px; text-align: center;
             transition: all 0.2s;
         }
         .input-field:focus { border-color: var(--dora-blue); outline: none; box-shadow: 0 0 0 4px rgba(0,150,214,0.2); }
+        
+        #toast-modal { z-index: 70; }
+        #toast-modal .toast-content { border: none; border-radius: 24px; padding: 32px; }
     </style>
 </head>
-<body>
+<body class="pb-24">
 
-    <!-- 頂部導航 -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="font-black text-[var(--dora-blue)] text-2xl md:text-3xl flex items-center gap-3">
-                <i class="fa-solid fa-person-running"></i>
-                生物分類跑酷賽
-            </div>
-            <div class="text-base font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
-                終極挑戰
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
+                <i class="fa-solid fa-code-branch"></i>
+                二分叉檢索表挑戰
             </div>
         </div>
     </header>
 
-    <!-- 遊戲主畫面 -->
-    <main id="main-game-area" class="max-w-4xl mx-auto px-4 py-6">
+    <main class="max-w-4xl mx-auto px-4 mt-8">
         
-        <!-- 狀態列 -->
-        <div class="bg-white rounded-3xl p-5 shadow-sm border-4 border-[var(--dora-blue)] mb-6 flex justify-between items-center pop-in">
-            <div class="text-2xl md:text-3xl font-black text-[var(--dora-blue)]">
-                分數: <span id="score" class="text-[var(--dora-red)]">0</span>
+        <!-- ================= 任務一：分類鑑定 ================= -->
+        <section id="task1-container" class="card-box">
+            <h2 class="section-title">
+                <i class="fa-solid fa-list-check"></i> 任務一：生物鑑定大師
+            </h2>
+            <div class="bg-yellow-50 p-4 rounded-xl border border-[var(--dora-yellow)] mb-6 shadow-sm">
+                <p class="font-bold text-gray-800">
+                    系統已為你從 5 大生物類群中，<span class="text-[var(--dora-red)]">各隨機抽出 1 種生物（共 5 個）</span>。<br>
+                    請點選上方的生物字卡，順著下方「由左至右」的檢索表特徵路線，將它們推敲出來並放入正確的空框中！
+                </p>
             </div>
-            <div class="text-2xl md:text-3xl font-black text-[var(--dora-blue)]">
-                生命: <span id="lives" class="text-3xl">❤️❤️❤️</span>
-            </div>
-        </div>
 
-        <!-- 跑酷動畫區 -->
-        <div class="track-area mb-8">
-            <div class="danger-zone"><i class="fa-solid fa-skull-crossbones text-white text-2xl"></i></div>
-            
-            <div id="runner" class="runner hidden">
-                <img id="runner-img" src="" alt="生物圖片">
-                <div id="runner-name" class="font-black text-xl text-[var(--dora-blue)] text-center w-full truncate"></div>
+            <!-- 待分類生物字卡區 -->
+            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-8 shadow-inner">
+                <p class="font-bold text-[var(--dora-blue)] mb-2"><i class="fa-solid fa-hand-pointer"></i> 待分類的生物（點擊選取）：</p>
+                <div id="card-bank" class="flex flex-wrap gap-2 justify-center min-h-[60px]"></div>
             </div>
-            
-            <!-- 初始提示語 -->
-            <div id="start-hint" class="absolute inset-0 flex items-center justify-center text-gray-400 font-black text-3xl tracking-wider">
-                等待遊戲開始...
-            </div>
-        </div>
 
-        <!-- 分類操作按鈕 -->
-        <div class="grid grid-cols-2 gap-4 pb-16">
-            <button class="category-btn" onclick="game.checkAnswer('原核生物-細菌')">
-                <i class="fa-solid fa-capsules text-3xl mb-2 text-gray-500"></i>
-                <span>原核生物</span>
-                <span class="text-[var(--dora-red)]">細菌</span>
+            <!-- 水平樹狀圖 (任務一) -->
+            <div class="bg-white p-2 rounded-xl border-2 border-gray-300 shadow-sm relative">
+                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">步驟一：放置生物</h3>
+                <p class="text-center text-sm font-bold text-[var(--dora-red)] mb-2 animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> 若畫面超出，可左右滑動查看完整檢索表</p>
+                
+                <div class="tree-container">
+                    <div class="tree min-w-max">
+                        <ul>
+                            <li>
+                                <div class="tree-node !bg-[var(--dora-blue)] !text-white">待鑑定生物</div>
+                                <ul>
+                                    <li>
+                                        <div class="tree-node">具有細胞核<br><span class="text-sm font-normal">(真核生物)</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="tree-node">具有細胞壁</div>
+                                                <ul>
+                                                    <li>
+                                                        <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠體<br><span class="text-sm font-normal">可行光合作用</span></div>
+                                                        <ul><li><div class="drop-zone" data-accept="algae" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                                    </li>
+                                                    <li>
+                                                        <div class="tree-node border-orange-500 text-orange-700 bg-orange-50">無葉綠體<br><span class="text-sm font-normal">分解有機物維生</span></div>
+                                                        <ul><li><div class="drop-zone" data-accept="slime" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="tree-node">不具細胞壁</div>
+                                                <ul><li><div class="drop-zone" data-accept="protozoa" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="tree-node">不具細胞核<br><span class="text-sm font-normal">(原核生物)</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠素<br><span class="text-sm font-normal">可行光合作用</span></div>
+                                                <ul><li><div class="drop-zone" data-accept="cyano" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                            </li>
+                                            <li>
+                                                <div class="tree-node border-gray-400 text-gray-700 bg-gray-50">不含葉綠素</div>
+                                                <ul><li><div class="drop-zone" data-accept="bacteria" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="btn-check-1" class="mt-8 text-center pb-4">
+                    <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers()">
+                        <i class="fa-solid fa-clipboard-check"></i> 任務一完成，送出檢查！
+                    </button>
+                </div>
+                
+                <div id="task1-success" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
+                    <i class="fa-solid fa-check-circle text-green-600 text-3xl mb-2"></i><br>
+                    <span class="text-xl font-black text-green-700">太厲害了！你成功鑑定出這 5 個生物了！</span><br>
+                    接下來難度升級，請往下滑動進行「任務二」。
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 任務二：特徵還原 (初始隱藏) ================= -->
+        <section id="task2-container" class="card-box hidden-step border-t-4 border-dashed border-[var(--dora-blue)] mt-12 pt-8">
+            <h2 class="section-title">
+                <i class="fa-solid fa-puzzle-piece"></i> 任務二：特徵還原大師
+            </h2>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 mb-6 shadow-sm">
+                <p class="font-bold text-gray-800">
+                    現在，科學家把生物固定在檢索表的終點了，但<span class="text-[var(--dora-red)]">分類的特徵路線圖</span>卻散落一地！<br>
+                    請點選上方的「特徵字卡」，反向推理，把它們放回檢索表正確的節點空框中。
+                </p>
+            </div>
+
+            <!-- 待分類特徵字卡區 -->
+            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-8 shadow-inner">
+                <p class="font-bold text-[var(--dora-blue)] mb-2"><i class="fa-solid fa-hand-pointer"></i> 待還原的特徵（點擊選取）：</p>
+                <div id="card-bank-t2" class="flex flex-wrap gap-2 justify-center min-h-[80px]"></div>
+            </div>
+
+            <!-- 水平樹狀圖 (任務二) -->
+            <div class="bg-white p-2 rounded-xl border-2 border-gray-300 shadow-sm relative">
+                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">步驟二：放置特徵路線</h3>
+                <p class="text-center text-sm font-bold text-[var(--dora-red)] mb-2 animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> 若畫面超出，可左右滑動查看完整檢索表</p>
+                
+                <div class="tree-container">
+                    <div class="tree min-w-max">
+                        <ul>
+                            <li>
+                                <div class="tree-node !bg-[var(--dora-blue)] !text-white">待鑑定生物</div>
+                                <ul>
+                                    <!-- 真核生物分支 -->
+                                    <li>
+                                        <div class="drop-zone-t2" data-accept="t2-eu" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-wall" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul>
+                                                    <li>
+                                                        <div class="drop-zone-t2" data-accept="t2-chloro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                        <ul><li><div class="tree-node border-green-500 text-green-700 bg-green-50">藻類<br><span class="text-sm font-normal text-gray-500">(如：昆布)</span></div></li></ul>
+                                                    </li>
+                                                    <li>
+                                                        <div class="drop-zone-t2" data-accept="t2-no-chloro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                        <ul><li><div class="tree-node border-orange-500 text-orange-700 bg-orange-50">原生菌<br><span class="text-sm font-normal text-gray-500">(如：黏菌)</span></div></li></ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-no-wall" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-yellow-500 text-yellow-700 bg-yellow-50">原生動物<br><span class="text-sm font-normal text-gray-500">(如：草履蟲)</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <!-- 原核生物分支 -->
+                                    <li>
+                                        <div class="drop-zone-t2" data-accept="t2-pro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-chlorophyll" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-blue-500 text-blue-700 bg-blue-50">藍菌<br><span class="text-sm font-normal text-gray-500">(如：顫藻)</span></div></li></ul>
+                                            </li>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-no-chlorophyll" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-gray-500 text-gray-700 bg-gray-50">細菌<br><span class="text-sm font-normal text-gray-500">(如：乳酸菌)</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="btn-check-2" class="mt-8 text-center pb-4">
+                    <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers2()">
+                        <i class="fa-solid fa-clipboard-check"></i> 任務二完成，送出檢查！
+                    </button>
+                </div>
+                
+                <div id="task2-success" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
+                    <i class="fa-solid fa-crown text-[var(--dora-yellow)] text-4xl mb-2"></i><br>
+                    <span class="text-2xl font-black text-[var(--dora-red)]">完美通關！生物分類大師！</span><br>
+                    請點擊下方的按鈕領取你的最終挑戰門票！
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 下一頁按鈕 (完成兩項任務前隱藏) ================= -->
+        <div id="next-page-locked" class="text-center mt-8 mb-16">
+            <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
+                <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
+                完成兩項任務以解鎖任意門
             </button>
-            <button class="category-btn" onclick="game.checkAnswer('原核生物-藍綠菌')">
-                <i class="fa-solid fa-sun text-3xl mb-2 text-gray-500"></i>
-                <span>原核生物</span>
-                <span class="text-[var(--dora-red)]">藍綠菌</span>
-            </button>
-            <button class="category-btn" onclick="game.checkAnswer('原生生物-藻類')">
-                <i class="fa-solid fa-leaf text-3xl mb-2 text-green-600"></i>
-                <span>原生生物</span>
-                <span class="text-green-600">藻類</span>
-            </button>
-            <button class="category-btn" onclick="game.checkAnswer('原生生物-原生動物')">
-                <i class="fa-solid fa-paw text-3xl mb-2 text-orange-500"></i>
-                <span>原生生物</span>
-                <span class="text-orange-500">原生動物</span>
-            </button>
-            <button class="category-btn col-span-2 md:col-span-1 md:col-start-2" onclick="game.checkAnswer('原生生物-原生菌')">
-                <i class="fa-solid fa-mushroom text-3xl mb-2 text-purple-600"></i>
-                <span>原生生物</span>
-                <span class="text-purple-600">原生菌</span>
-            </button>
+        </div>
+        
+        <div id="next-page-container" class="text-center mt-8 mb-16 hidden-step">
+            <a href="CLlll10switch.html" class="btn-red animate-bounce no-underline py-4 px-8 rounded-full">
+                <i class="fa-solid fa-forward-step text-3xl"></i>
+                返回最終挑戰
+            </a>
         </div>
 
     </main>
 
-    <!-- 遊戲覆蓋視窗 (開始/結果) -->
-    <div id="gameOverlay" class="overlay">
+    <!-- 結束登錄視窗 (任務二過關後顯示) -->
+    <div id="end-overlay" class="overlay">
         <div class="overlay-content pop-in">
-            <!-- 開始遊戲標題區 -->
-            <div id="overlay-header">
-                <i class="fa-solid fa-bolt text-6xl text-[var(--dora-yellow)] mb-4"></i>
-                <h1 id="overlayTitle" class="text-4xl md:text-5xl font-black mb-4 text-[var(--dora-blue)]">極速分類跑酷賽</h1>
-                <p id="overlayDesc" class="text-xl font-bold text-gray-600 mb-8 leading-relaxed">
-                    愈快答對，分數愈高！<br>
-                    <span class="text-[var(--dora-red)]">小心別讓生物跑進危險區喔！</span>
-                </p>
-            </div>
-
-            <!-- 登錄表單區 (預設隱藏) -->
-            <div id="login-form" class="hidden mb-6">
-                <h2 id="end-status-title" class="text-4xl font-black text-[var(--dora-red)] mb-4"></h2>
+            <div id="login-form" class="mb-6">
+                <h2 class="text-4xl md:text-5xl font-black text-[var(--dora-red)] mb-4">完美通關！</h2>
                 <p class="text-2xl font-black text-[var(--dora-blue)] mb-6">要登錄完成嗎？</p>
-                <div class="flex gap-3 mb-2">
+                <div class="flex gap-3 mb-6">
                     <input type="text" id="stu-class" class="input-field w-1/2" placeholder="班級 (例:701)">
                     <input type="text" id="stu-seat" class="input-field w-1/2" placeholder="座號 (例:05)">
                 </div>
-            </div>
-
-            <!-- 按鈕容器 -->
-            <div id="overlayBtnContainer" class="flex flex-col gap-4 mt-6">
-                <button class="btn-action w-full py-5 text-3xl" onclick="game.start()">開始挑戰！</button>
+                <div id="overlayBtnContainer" class="flex flex-col gap-4">
+                    <button class="btn-action w-full py-4 text-2xl" onclick="submitToGAS()"><i class="fa-solid fa-cloud-arrow-up"></i> 登錄</button>
+                    <button class="btn-gray w-full py-4 text-2xl" onclick="skipLogin()">不登錄</button>
+                </div>
             </div>
             
-            <!-- 返回按鈕 (登錄後或不登錄顯示) -->
+            <!-- 返回按鈕 (登錄後或選擇不登錄後顯示) -->
             <a id="btn-return" href="CLlll10switch.html" class="btn-red w-full py-5 text-2xl mt-4 hidden">
                 <i class="fa-solid fa-forward-step"></i> 返回最終挑戰
             </a>
         </div>
     </div>
 
-    <!-- 遊戲邏輯 -->
+    <!-- 提示彈跳視窗 -->
+    <div id="toast-modal" class="overlay">
+        <div class="toast-content">
+            <div id="toast-icon" class="text-6xl mb-4"></div>
+            <h3 id="toast-title" class="text-2xl font-black mb-2"></h3>
+            <p id="toast-msg" class="text-lg text-gray-600 whitespace-pre-line"></p>
+            <button class="btn-action mt-6" onclick="closeToast()">我知道了</button>
+        </div>
+    </div>
+
     <script>
-        // 更新為您指定的 GAS URL
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxDxpDneO-ECgzZR754jySpIKXtEtOajbygRPrr50DueUzUMFflKRArK8dScFBuC2F1_w/exec";
 
-        // 題庫設定
-        const organisms = [
-            { name: "草履蟲", img: "CL0801.png", category: "原生生物-原生動物" },
-            { name: "線鞭蟲", img: "CL0802.png", category: "原生生物-原生動物" },
-            { name: "瘧原蟲", img: "CL0803.png", category: "原生生物-原生動物" },
-            { name: "變形蟲", img: "CL0804.png", category: "原生生物-原生動物" },
-            { name: "黏菌", img: "CL0805.png", category: "原生生物-原生菌" },
-            { name: "單胞藻", img: "CL0701.png", category: "原生生物-藻類" },
-            { name: "巨藻", img: "CL0702.png", category: "原生生物-藻類" },
-            { name: "石蓴", img: "CL0704.png", category: "原生生物-藻類" },
-            { name: "昆布(海帶)", img: "CL0705.png", category: "原生生物-藻類" },
-            { name: "紫菜(海苔)", img: "CL0706.png", category: "原生生物-藻類" },
-            { name: "石花菜(寒天)", img: "CL0707.png", category: "原生生物-藻類" },
-            { name: "矽藻", img: "CL0708.png", category: "原生生物-藻類" },
-            { name: "色球藻", img: "CLpic07.png", category: "原核生物-藍綠菌" },
-            { name: "顫藻", img: "CLpic08.png", category: "原核生物-藍綠菌" },
-            { name: "念珠藻", img: "CLpic09.png", category: "原核生物-藍綠菌" },
-            { name: "金黃色葡萄球菌", img: "CLpic03.png", category: "原核生物-細菌" },
-            { name: "結核桿菌", img: "CLpic04.png", category: "原核生物-細菌" },
-            { name: "鉤端螺旋菌", img: "CLpic05.png", category: "原核生物-細菌" }
-        ];
-
-        // 分數設定
-        const BASE_SCORE = 5000;
-        const MIN_SCORE = 500;
-        const PENALTY = 1000;
-
-        const game = {
-            score: 0,
-            lives: 3,
-            currentIndex: 0,
-            items: [],
-            timer: null,
-            position: 0,
-            speed: 0.35, 
-            isPlaying: false,
-            
-            init: function() {
-                const overlay = document.getElementById('gameOverlay');
-                overlay.style.display = 'flex';
-                this.resetOverlayToStart();
-            },
-            
-            resetOverlayToStart: function() {
-                document.getElementById('overlay-header').classList.remove('hidden');
-                document.getElementById('login-form').classList.add('hidden');
-                document.getElementById('btn-return').classList.add('hidden');
-                
-                const btnContainer = document.getElementById('overlayBtnContainer');
-                btnContainer.innerHTML = '';
-                btnContainer.classList.remove('hidden');
-                
-                const startBtn = document.createElement('button');
-                startBtn.className = 'btn-action w-full py-5 text-3xl';
-                startBtn.innerHTML = '<i class="fa-solid fa-play"></i> 開始挑戰！';
-                startBtn.onclick = () => this.start();
-                btnContainer.appendChild(startBtn);
-            },
-            
-            start: function() {
-                document.getElementById('gameOverlay').style.display = 'none';
-                document.getElementById('start-hint').style.display = 'none';
-                
-                this.score = 0;
-                this.lives = 3;
-                this.currentIndex = 0;
-                this.isPlaying = true;
-                
-                // 隨機打亂題目
-                this.items = [...organisms].sort(() => Math.random() - 0.5);
-                
-                this.updateStats();
-                this.spawn();
-            },
-            
-            spawn: function() {
-                if (this.currentIndex >= this.items.length) {
-                    this.end(true);
-                    return;
-                }
-                
-                this.position = 0;
-                this.speed = 0.35 + (this.currentIndex * 0.015); 
-                
-                const currentItem = this.items[this.currentIndex];
-                const runner = document.getElementById('runner');
-                const runnerImg = document.getElementById('runner-img');
-                
-                runnerImg.src = currentItem.img;
-                runnerImg.onerror = function() {
-                    this.src = `https://placehold.co/120x120/4A90E2/FFF?text=${encodeURIComponent(currentItem.name)}`;
-                };
-                document.getElementById('runner-name').innerText = currentItem.name;
-                
-                runner.style.left = '0%';
-                runner.style.display = 'flex';
-                runner.classList.remove('hidden', 'pop-out', 'shake');
-                
-                clearInterval(this.timer);
-                this.timer = setInterval(() => this.tick(), 20); 
-            },
-            
-            tick: function() {
-                if (!this.isPlaying) return;
-                
-                this.position += this.speed;
-                const runner = document.getElementById('runner');
-                
-                runner.style.left = `calc(${this.position}% - ${this.position * 1.4}px)`;
-                
-                if (this.position >= 100) {
-                    this.handleWrong();
-                }
-            },
-            
-            checkAnswer: function(category) {
-                if (!this.isPlaying) return;
-                
-                const currentItem = this.items[this.currentIndex];
-                
-                if (category === currentItem.category) {
-                    this.isPlaying = false;
-                    clearInterval(this.timer);
-                    
-                    let points = Math.floor(BASE_SCORE - (this.position * 45));
-                    if (points < MIN_SCORE) points = MIN_SCORE;
-                    
-                    this.score += points;
-                    this.updateStats();
-                    
-                    const runner = document.getElementById('runner');
-                    runner.classList.add('pop-out');
-                    
-                    setTimeout(() => {
-                        runner.style.display = 'none';
-                        this.currentIndex++;
-                        this.isPlaying = true;
-                        this.spawn();
-                    }, 300);
-                } else {
-                    this.score -= PENALTY;
-                    if (this.score < 0) this.score = 0;
-                    this.updateStats();
-                    
-                    document.getElementById('main-game-area').classList.add('main-shake');
-                    setTimeout(() => document.getElementById('main-game-area').classList.remove('main-shake'), 400);
-                    
-                    this.handleWrong();
-                }
-            },
-            
-            handleWrong: function() {
-                this.isPlaying = false;
-                clearInterval(this.timer);
-                
-                this.lives--;
-                this.updateStats();
-                
-                const runner = document.getElementById('runner');
-                runner.classList.add('shake');
-                
-                setTimeout(() => {
-                    runner.classList.remove('shake');
-                    if (this.lives <= 0) {
-                        this.end(false);
-                    } else {
-                        runner.style.display = 'none';
-                        this.currentIndex++;
-                        this.isPlaying = true;
-                        this.spawn();
-                    }
-                }, 400);
-            },
-            
-            updateStats: function() {
-                document.getElementById('score').innerText = this.score;
-                document.getElementById('lives').innerText = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
-            },
-            
-            end: function(isWin) {
-                this.isPlaying = false;
-                clearInterval(this.timer);
-                
-                document.getElementById('runner').style.display = 'none';
-                document.getElementById('start-hint').style.display = 'flex';
-                
-                const overlay = document.getElementById('gameOverlay');
-                const btnContainer = document.getElementById('overlayBtnContainer');
-                
-                overlay.style.display = 'flex';
-                btnContainer.innerHTML = '';
-                
-                if (isWin || this.currentIndex > 0) {
-                    // 切換至登錄畫面
-                    document.getElementById('overlay-header').classList.add('hidden');
-                    document.getElementById('login-form').classList.remove('hidden');
-                    
-                    // 設定狀態標題
-                    document.getElementById('end-status-title').innerText = isWin ? '太強了！過關！' : '挑戰結束！';
-                    
-                    const submitBtn = document.createElement('button');
-                    submitBtn.className = 'btn-action w-full py-4 text-2xl mb-2';
-                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 登錄';
-                    submitBtn.onclick = () => submitToGAS();
-                    
-                    const skipBtn = document.createElement('button');
-                    skipBtn.className = 'btn-gray w-full py-4 text-2xl';
-                    skipBtn.innerHTML = '不登錄';
-                    skipBtn.onclick = () => {
-                        document.getElementById('login-form').classList.add('hidden');
-                        btnContainer.classList.add('hidden');
-                        document.getElementById('btn-return').classList.remove('hidden');
-                    };
-                    
-                    btnContainer.appendChild(submitBtn);
-                    btnContainer.appendChild(skipBtn);
-                } else {
-                    document.getElementById('overlay-header').classList.remove('hidden');
-                    document.getElementById('overlayTitle').innerText = "挑戰失敗";
-                    document.getElementById('overlayTitle').style.color = "#EF5350";
-                    document.getElementById('overlayDesc').innerText = "別氣餒，生物分類需要多加練習，再試一次吧！";
-                    
-                    const retryBtn = document.createElement('button');
-                    retryBtn.className = 'btn-action w-full py-4 text-2xl';
-                    retryBtn.innerText = "重新開始";
-                    retryBtn.onclick = () => this.start();
-                    btnContainer.appendChild(retryBtn);
-                }
-            }
+        // ================= 資料庫與初始化 =================
+        const bioDB = {
+            'bacteria': ['金黃色葡萄球菌', '乳酸菌', '結核桿菌', '瘤胃球菌', '鉤端螺旋體'],
+            'cyano': ['顫藻', '念珠藻', '色球藻'],
+            'algae': ['矽藻', '巨藻', '單胞藻', '石花菜', '昆布'],
+            'protozoa': ['變形蟲', '草履蟲', '瘧原蟲', '眼蟲', '線鞭蟲'],
+            'slime': ['黏菌']
         };
 
-        // 提交完成狀態至 Google Apps Script
+        const t2Cards = [
+            { id: 't2-eu', html: '具有細胞核<br><span class="text-sm font-normal">(真核生物)</span>' },
+            { id: 't2-pro', html: '不具細胞核<br><span class="text-sm font-normal">(原核生物)</span>' },
+            { id: 't2-wall', html: '具有細胞壁' },
+            { id: 't2-no-wall', html: '不具細胞壁' },
+            { id: 't2-chloro', html: '含有葉綠體<br><span class="text-sm font-normal">可行光合作用</span>' },
+            { id: 't2-no-chloro', html: '無葉綠體<br><span class="text-sm font-normal">分解有機物維生</span>' },
+            { id: 't2-chlorophyll', html: '含有葉綠素<br><span class="text-sm font-normal">可行光合作用</span>' },
+            { id: 't2-no-chlorophyll', html: '不含葉綠素' }
+        ];
+
+        let activeCard1 = null;
+        let activeCard2 = null;
+
+        window.onload = () => {
+            initGame1();
+            initGame2();
+        };
+
+        // ================= 任務一邏輯 =================
+        function initGame1() {
+            const bank = document.getElementById('card-bank');
+            let selectedCards = [];
+
+            for (let category in bioDB) {
+                const speciesArray = bioDB[category];
+                const randomSpecies = speciesArray[Math.floor(Math.random() * speciesArray.length)];
+                selectedCards.push({ id: category, name: randomSpecies });
+            }
+            selectedCards.sort(() => Math.random() - 0.5);
+
+            selectedCards.forEach(cardData => {
+                const div = document.createElement('div');
+                div.className = 'bac-card';
+                div.innerText = cardData.name;
+                div.setAttribute('data-id', cardData.id);
+                div.onclick = () => handleCardClick(div);
+                bank.appendChild(div);
+            });
+        }
+
+        function handleCardClick(card) {
+            if (card.parentElement.id !== 'card-bank') {
+                const zone = card.parentElement;
+                document.getElementById('card-bank').appendChild(card);
+                zone.querySelector('span').style.display = 'block'; 
+                return;
+            }
+            if (activeCard1 === card) {
+                card.classList.remove('selected');
+                activeCard1 = null;
+            } else {
+                if (activeCard1) activeCard1.classList.remove('selected');
+                card.classList.add('selected');
+                activeCard1 = card;
+            }
+        }
+
+        function handleZoneClick(zone) {
+            if (!activeCard1) {
+                const existing = zone.querySelector('.bac-card');
+                if(existing) {
+                    document.getElementById('card-bank').appendChild(existing);
+                    zone.querySelector('span').style.display = 'block';
+                }
+                return;
+            }
+            const existing = zone.querySelector('.bac-card');
+            if (existing) document.getElementById('card-bank').appendChild(existing);
+
+            zone.appendChild(activeCard1);
+            activeCard1.classList.remove('selected');
+            activeCard1 = null;
+            zone.querySelector('span').style.display = 'none'; 
+        }
+
+        function checkAnswers() {
+            const zones = document.querySelectorAll('#task1-container .drop-zone');
+            let isComplete = true;
+            let isCorrect = true;
+
+            zones.forEach(zone => {
+                const card = zone.querySelector('.bac-card');
+                if (!card) { isComplete = false; } 
+                else if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) { isCorrect = false; }
+            });
+
+            if (!isComplete) {
+                showToast(false, '任務一未完成', '請把上方 5 張字卡，都放入樹狀圖最右側的空格中喔！');
+                return;
+            }
+
+            if (isCorrect) {
+                document.getElementById('btn-check-1').style.display = 'none';
+                document.getElementById('task1-success').style.display = 'block';
+                document.getElementById('task2-container').style.display = 'block';
+                showToast(true, '鑑定完全正確！', '你成功找出了這 5 個生物！接下來進入任務二，把特徵補回去吧！');
+                
+                setTimeout(() => {
+                    document.getElementById('task2-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 800);
+            } else {
+                showToast(false, '分類有誤喔！', '請順著樹狀圖的特徵路線，從左到右重新檢查看看是哪個步驟走錯了。');
+            }
+        }
+
+        // ================= 任務二邏輯 =================
+        function initGame2() {
+            const bank = document.getElementById('card-bank-t2');
+            const shuffled = [...t2Cards].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(cardData => {
+                const div = document.createElement('div');
+                div.className = 'bac-card-t2';
+                div.innerHTML = cardData.html;
+                div.setAttribute('data-id', cardData.id);
+                div.onclick = () => handleCardClick2(div);
+                bank.appendChild(div);
+            });
+        }
+
+        function handleCardClick2(card) {
+            if (card.parentElement.id !== 'card-bank-t2') {
+                const zone = card.parentElement;
+                document.getElementById('card-bank-t2').appendChild(card);
+                zone.querySelector('span').style.display = 'block'; 
+                return;
+            }
+            if (activeCard2 === card) {
+                card.classList.remove('selected');
+                activeCard2 = null;
+            } else {
+                if (activeCard2) activeCard2.classList.remove('selected');
+                card.classList.add('selected');
+                activeCard2 = card;
+            }
+        }
+
+        function handleZoneClick2(zone) {
+            if (!activeCard2) {
+                const existing = zone.querySelector('.bac-card-t2');
+                if(existing) {
+                    document.getElementById('card-bank-t2').appendChild(existing);
+                    zone.querySelector('span').style.display = 'block';
+                }
+                return;
+            }
+            const existing = zone.querySelector('.bac-card-t2');
+            if (existing) document.getElementById('card-bank-t2').appendChild(existing);
+
+            zone.appendChild(activeCard2);
+            activeCard2.classList.remove('selected');
+            activeCard2 = null;
+            zone.querySelector('span').style.display = 'none'; 
+        }
+
+        function checkAnswers2() {
+            const zones = document.querySelectorAll('.drop-zone-t2');
+            let isComplete = true;
+            let isCorrect = true;
+
+            zones.forEach(zone => {
+                const card = zone.querySelector('.bac-card-t2');
+                if (!card) { isComplete = false; } 
+                else if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) { isCorrect = false; }
+            });
+
+            if (!isComplete) {
+                showToast(false, '任務二未完成', '請把上方 8 張特徵字卡，全部放入檢索表的路線節點中！');
+                return;
+            }
+
+            if (isCorrect) {
+                document.getElementById('btn-check-2').style.display = 'none';
+                document.getElementById('task2-success').style.display = 'block';
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+                
+                // 彈出結束登錄視窗
+                document.getElementById('end-overlay').style.display = 'flex';
+                showToast(true, '特徵還原成功！', '你已經完全精通生物分類的檢索邏輯，恭喜過關！');
+            } else {
+                showToast(false, '特徵放錯囉！', '請反向推演，例如「藻類」應該具備什麼樣的構造與功能？重新檢查一遍路線吧。');
+            }
+        }
+
+        // ================= 登錄與 GAS 串接 =================
         async function submitToGAS() {
             const cls = document.getElementById('stu-class').value.trim();
             const seat = document.getElementById('stu-seat').value.trim();
@@ -555,21 +675,19 @@
                 return;
             }
             
-            // 隱藏表單，顯示載入狀態
-            document.getElementById('login-form').classList.add('hidden');
+            // 隱藏按鈕，顯示載入狀態
             document.getElementById('overlayBtnContainer').classList.add('hidden');
             
             const loadingDiv = document.createElement('div');
             loadingDiv.id = 'loading-status';
-            loadingDiv.className = 'text-2xl font-bold text-[var(--dora-blue)] py-8';
+            loadingDiv.className = 'text-2xl font-bold text-[var(--dora-blue)] py-4';
             loadingDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 登錄中，請稍候...';
-            document.querySelector('.overlay-content').insertBefore(loadingDiv, document.getElementById('btn-return'));
+            document.getElementById('login-form').appendChild(loadingDiv);
 
-            // 參數設定：傳送 2 給 GAS 腳本，使用 score=2 與 completed=2 雙重確保相容性
+            // 參數設定：傳送 2 給 GAS 腳本，使用 score=2 與 completed=2
             const requestUrl = `${GAS_URL}?class=${encodeURIComponent(cls)}&seat=${encodeURIComponent(seat)}&score=2&completed=2`;
 
             try {
-                // 使用 no-cors 模式確保 GET 請求送出，忽略跨網域讀取限制
                 await fetch(requestUrl, { mode: 'no-cors' });
                 
                 document.getElementById('loading-status').innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-5xl mb-4"></i><br><span class="text-green-600 text-3xl">登錄成功！</span>';
@@ -583,11 +701,29 @@
             }
         }
 
-        // 頁面載入時初始化
-        window.onload = () => {
-            game.init();
-        };
+        function skipLogin() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('btn-return').classList.remove('hidden');
+        }
 
+        // ================= Toast 系統 =================
+        function showToast(isSuccess, titleMsg, descMsg) {
+            const modal = document.getElementById('toast-modal');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-msg');
+
+            if (isSuccess) {
+                icon.className = 'fa-solid fa-face-smile-wink text-[var(--dora-blue)]';
+                title.innerHTML = `<span class="text-[var(--dora-blue)]">${titleMsg}</span>`;
+            } else {
+                icon.className = 'fa-solid fa-circle-exclamation text-[var(--dora-red)]';
+                title.innerHTML = `<span class="text-[var(--dora-red)]">${titleMsg}</span>`;
+            }
+            msg.innerText = descMsg;
+            modal.style.display = 'flex';
+        }
+        function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
