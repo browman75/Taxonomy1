@@ -100,7 +100,6 @@
             overflow-x: auto;
             overflow-y: hidden;
             padding: 20px 0 20px 20px;
-            /* 讓滾動軸更滑順 */
             -webkit-overflow-scrolling: touch; 
         }
         
@@ -114,7 +113,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding-left: 50px; /* 層級之間的水平距離 */
+            padding-left: 50px; 
             position: relative;
         }
 
@@ -123,71 +122,33 @@
             flex-direction: row;
             align-items: center;
             position: relative;
-            padding: 10px 0; /* 分支之間的垂直距離 */
+            padding: 10px 0; 
         }
 
-        /* 進入節點的水平連接線 */
         .tree li::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: -50px;
-            width: 50px;
-            height: 3px;
-            background: #9ca3af;
+            content: ''; position: absolute; top: 50%; left: -50px;
+            width: 50px; height: 3px; background: #9ca3af;
         }
 
-        /* 連接兄弟節點的垂直連接線 */
         .tree li::after {
-            content: '';
-            position: absolute;
-            left: -50px;
-            bottom: 50%;
-            height: 100%;
-            width: 3px;
-            background: #9ca3af;
+            content: ''; position: absolute; left: -50px; bottom: 50%;
+            height: 100%; width: 3px; background: #9ca3af;
         }
 
-        .tree li:first-child::after {
-            top: 50%;
-            height: 50%;
-            bottom: auto;
-        }
-
-        .tree li:last-child::after {
-            bottom: 50%;
-            height: 50%;
-        }
-
-        /* 如果只有一個子節點，不需要垂直線 */
-        .tree li:only-child::after {
-            display: none;
-        }
-
-        /* 根節點不需要左側的線條 */
+        .tree li:first-child::after { top: 50%; height: 50%; bottom: auto; }
+        .tree li:last-child::after { bottom: 50%; height: 50%; }
+        .tree li:only-child::after { display: none; }
         .tree > ul { padding-left: 0; }
         .tree > ul > li::before, .tree > ul > li::after { display: none; }
 
-        /* 樹狀圖節點樣式 */
         .tree-node {
-            background-color: white;
-            border: 3px solid var(--dora-blue);
-            color: var(--dora-blue);
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-weight: 900;
-            white-space: nowrap;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-size: 18px;
-            line-height: 1.4;
-            text-align: center;
+            background-color: white; border: 3px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 10px 16px; border-radius: 12px; font-weight: 900; white-space: nowrap;
+            position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 18px; line-height: 1.4; text-align: center;
         }
 
-        /* --------------------------------- */
-
-        /* 字卡與放置區樣式 */
+        /* 字卡與放置區樣式 (任務一) */
         .bac-card {
             background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
             padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
@@ -209,6 +170,31 @@
         .drop-zone .bac-card {
             margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent; width: 100%; height: 100%;
         }
+
+        /* 字卡與放置區樣式 (任務二特徵版) */
+        .bac-card-t2 {
+            background-color: var(--pure-white); border: 2px solid var(--dora-blue); color: var(--dora-blue);
+            padding: 6px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; font-size: 16px; margin: 4px;
+            width: 170px; height: 70px; line-height: 1.3; text-align: center;
+        }
+        .bac-card-t2:active { transform: scale(0.95); }
+        .bac-card-t2.selected {
+            background-color: var(--dora-yellow); border-color: #D4B400; color: var(--dora-red);
+            box-shadow: 0 0 0 4px rgba(255, 217, 0, 0.4); transform: scale(1.05); z-index: 10;
+        }
+        .drop-zone-t2 { 
+            width: 180px; height: 80px; background-color: #f8fafc; border: 3px dashed #9ca3af;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; cursor: pointer; flex-shrink: 0; position: relative; z-index: 2;
+        }
+        .drop-zone-t2:hover { background-color: #e2e8f0; border-color: var(--dora-blue); }
+        .drop-zone-t2 .bac-card-t2 {
+            margin: 0; box-shadow: none; background-color: var(--dora-blue); color: white; border-color: transparent; width: 100%; height: 100%;
+        }
+        .drop-zone-t2 .bac-card-t2 span { color: rgba(255,255,255,0.8); }
+
         .placeholder-text { font-size: 16px; color: #9ca3af; font-weight: bold; }
 
         /* 提示彈跳視窗 */
@@ -225,7 +211,6 @@
 </head>
 <body class="pb-24">
 
-    <!-- 頂部導航 -->
     <header class="bg-white shadow-md sticky top-0 z-40">
         <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="font-black text-[var(--dora-blue)] text-2xl flex items-center gap-2">
@@ -237,13 +222,14 @@
 
     <main class="max-w-4xl mx-auto px-4 mt-8">
         
-        <section class="card-box">
+        <!-- ================= 任務一：分類鑑定 ================= -->
+        <section id="task1-container" class="card-box">
             <h2 class="section-title">
-                <i class="fa-solid fa-list-check"></i> 任務：分類鑑定大師
+                <i class="fa-solid fa-list-check"></i> 任務一：生物鑑定大師
             </h2>
             <div class="bg-yellow-50 p-4 rounded-xl border border-[var(--dora-yellow)] mb-6 shadow-sm">
                 <p class="font-bold text-gray-800">
-                    系統已經為你從 5 大生物類群中，<span class="text-[var(--dora-red)]">各隨機抽出了 1 種生物（共 5 個）</span>。<br>
+                    系統已為你從 5 大生物類群中，<span class="text-[var(--dora-red)]">各隨機抽出 1 種生物（共 5 個）</span>。<br>
                     請點選上方的生物字卡，順著下方「由左至右」的檢索表特徵路線，將它們推敲出來並放入正確的空框中！
                 </p>
             </div>
@@ -251,73 +237,138 @@
             <!-- 待分類生物字卡區 -->
             <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-8 shadow-inner">
                 <p class="font-bold text-[var(--dora-blue)] mb-2"><i class="fa-solid fa-hand-pointer"></i> 待分類的生物（點擊選取）：</p>
-                <div id="card-bank" class="flex flex-wrap gap-2 justify-center min-h-[60px]">
-                    <!-- JS 會在這裡動態產生 5 張隨機字卡 -->
-                </div>
+                <div id="card-bank" class="flex flex-wrap gap-2 justify-center min-h-[60px]"></div>
             </div>
 
-            <!-- 水平樹狀圖二分叉檢索表 -->
+            <!-- 水平樹狀圖 (任務一) -->
             <div class="bg-white p-2 rounded-xl border-2 border-gray-300 shadow-sm relative">
-                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">生物分類二分叉檢索表</h3>
+                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">步驟一：放置生物</h3>
                 <p class="text-center text-sm font-bold text-[var(--dora-red)] mb-2 animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> 若畫面超出，可左右滑動查看完整檢索表</p>
                 
                 <div class="tree-container">
                     <div class="tree min-w-max">
                         <ul>
                             <li>
-                                <!-- 樹根 -->
                                 <div class="tree-node !bg-[var(--dora-blue)] !text-white">待鑑定生物</div>
                                 <ul>
-                                    <!-- 真核生物 -->
                                     <li>
                                         <div class="tree-node">具有細胞核<br><span class="text-sm font-normal">(真核生物)</span></div>
                                         <ul>
-                                            <!-- 具細胞壁 -->
                                             <li>
                                                 <div class="tree-node">具有細胞壁</div>
                                                 <ul>
-                                                    <!-- 有葉綠體 -->
                                                     <li>
                                                         <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠體<br><span class="text-sm font-normal">可行光合作用</span></div>
-                                                        <ul>
-                                                            <li><div class="drop-zone" data-accept="algae" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li>
-                                                        </ul>
+                                                        <ul><li><div class="drop-zone" data-accept="algae" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
                                                     </li>
-                                                    <!-- 無葉綠體 -->
                                                     <li>
                                                         <div class="tree-node border-orange-500 text-orange-700 bg-orange-50">無葉綠體<br><span class="text-sm font-normal">分解有機物維生</span></div>
-                                                        <ul>
-                                                            <li><div class="drop-zone" data-accept="slime" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li>
-                                                        </ul>
+                                                        <ul><li><div class="drop-zone" data-accept="slime" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <!-- 不具細胞壁 -->
                                             <li>
                                                 <div class="tree-node">不具細胞壁</div>
-                                                <ul>
-                                                    <li><div class="drop-zone" data-accept="protozoa" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li>
-                                                </ul>
+                                                <ul><li><div class="drop-zone" data-accept="protozoa" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
                                             </li>
                                         </ul>
                                     </li>
-                                    <!-- 原核生物 -->
                                     <li>
                                         <div class="tree-node">不具細胞核<br><span class="text-sm font-normal">(原核生物)</span></div>
                                         <ul>
-                                            <!-- 含有葉綠素 -->
                                             <li>
                                                 <div class="tree-node border-green-500 text-green-700 bg-green-50">含有葉綠素<br><span class="text-sm font-normal">可行光合作用</span></div>
-                                                <ul>
-                                                    <li><div class="drop-zone" data-accept="cyano" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li>
-                                                </ul>
+                                                <ul><li><div class="drop-zone" data-accept="cyano" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
                                             </li>
-                                            <!-- 不含葉綠素 -->
                                             <li>
                                                 <div class="tree-node border-gray-400 text-gray-700 bg-gray-50">不含葉綠素</div>
+                                                <ul><li><div class="drop-zone" data-accept="bacteria" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="btn-check-1" class="mt-8 text-center pb-4">
+                    <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers()">
+                        <i class="fa-solid fa-clipboard-check"></i> 任務一完成，送出檢查！
+                    </button>
+                </div>
+                
+                <div id="task1-success" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
+                    <i class="fa-solid fa-check-circle text-green-600 text-3xl mb-2"></i><br>
+                    <span class="text-xl font-black text-green-700">太厲害了！你成功鑑定出這 5 個生物了！</span><br>
+                    接下來難度升級，請往下滑動進行「任務二」。
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 任務二：特徵還原 (初始隱藏) ================= -->
+        <section id="task2-container" class="card-box hidden-step border-t-4 border-dashed border-[var(--dora-blue)] mt-12 pt-8">
+            <h2 class="section-title">
+                <i class="fa-solid fa-puzzle-piece"></i> 任務二：特徵還原大師
+            </h2>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 mb-6 shadow-sm">
+                <p class="font-bold text-gray-800">
+                    現在，科學家把生物固定在檢索表的終點了，但<span class="text-[var(--dora-red)]">分類的特徵路線圖</span>卻散落一地！<br>
+                    請點選上方的「特徵字卡」，反向推理，把它們放回檢索表正確的節點空框中。
+                </p>
+            </div>
+
+            <!-- 待分類特徵字卡區 -->
+            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-8 shadow-inner">
+                <p class="font-bold text-[var(--dora-blue)] mb-2"><i class="fa-solid fa-hand-pointer"></i> 待還原的特徵（點擊選取）：</p>
+                <div id="card-bank-t2" class="flex flex-wrap gap-2 justify-center min-h-[80px]"></div>
+            </div>
+
+            <!-- 水平樹狀圖 (任務二) -->
+            <div class="bg-white p-2 rounded-xl border-2 border-gray-300 shadow-sm relative">
+                <h3 class="font-black text-xl text-center mb-2 bg-gray-100 py-2 rounded-t-lg text-gray-600">步驟二：放置特徵路線</h3>
+                <p class="text-center text-sm font-bold text-[var(--dora-red)] mb-2 animate-pulse"><i class="fa-solid fa-arrows-left-right"></i> 若畫面超出，可左右滑動查看完整檢索表</p>
+                
+                <div class="tree-container">
+                    <div class="tree min-w-max">
+                        <ul>
+                            <li>
+                                <div class="tree-node !bg-[var(--dora-blue)] !text-white">待鑑定生物</div>
+                                <ul>
+                                    <!-- 真核生物分支 -->
+                                    <li>
+                                        <div class="drop-zone-t2" data-accept="t2-eu" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-wall" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
                                                 <ul>
-                                                    <li><div class="drop-zone" data-accept="bacteria" onclick="handleZoneClick(this)"><span class="placeholder-text">點擊放入</span></div></li>
+                                                    <li>
+                                                        <div class="drop-zone-t2" data-accept="t2-chloro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                        <ul><li><div class="tree-node border-green-500 text-green-700 bg-green-50">藻類<br><span class="text-sm font-normal text-gray-500">(如：昆布)</span></div></li></ul>
+                                                    </li>
+                                                    <li>
+                                                        <div class="drop-zone-t2" data-accept="t2-no-chloro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                        <ul><li><div class="tree-node border-orange-500 text-orange-700 bg-orange-50">原生菌<br><span class="text-sm font-normal text-gray-500">(如：黏菌)</span></div></li></ul>
+                                                    </li>
                                                 </ul>
+                                            </li>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-no-wall" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-yellow-500 text-yellow-700 bg-yellow-50">原生動物<br><span class="text-sm font-normal text-gray-500">(如：草履蟲)</span></div></li></ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <!-- 原核生物分支 -->
+                                    <li>
+                                        <div class="drop-zone-t2" data-accept="t2-pro" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                        <ul>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-chlorophyll" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-blue-500 text-blue-700 bg-blue-50">藍菌<br><span class="text-sm font-normal text-gray-500">(如：顫藻)</span></div></li></ul>
+                                            </li>
+                                            <li>
+                                                <div class="drop-zone-t2" data-accept="t2-no-chlorophyll" onclick="handleZoneClick2(this)"><span class="placeholder-text">點擊放入特徵</span></div>
+                                                <ul><li><div class="tree-node border-gray-500 text-gray-700 bg-gray-50">細菌<br><span class="text-sm font-normal text-gray-500">(如：乳酸菌)</span></div></li></ul>
                                             </li>
                                         </ul>
                                     </li>
@@ -328,15 +379,15 @@
                 </div>
 
                 <div class="mt-8 text-center pb-4">
-                    <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers()">
-                        <i class="fa-solid fa-clipboard-check"></i> 鑑定完成，送出檢查！
+                    <button class="btn-action px-8 py-3 text-xl w-full md:w-auto" onclick="checkAnswers2()">
+                        <i class="fa-solid fa-clipboard-check"></i> 任務二完成，送出檢查！
                     </button>
                 </div>
                 
-                <div id="success-feedback" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
+                <div id="task2-success" class="hidden-step highlight-box mt-2 text-center mx-4 mb-4">
                     <i class="fa-solid fa-crown text-[var(--dora-yellow)] text-4xl mb-2"></i><br>
-                    <span class="text-2xl font-black text-[var(--dora-red)]">太厲害了！你完全精通生物分類了！</span><br>
-                    二分叉檢索表是科學家鑑定生物的絕佳工具，恭喜你成功解鎖下一關！
+                    <span class="text-2xl font-black text-[var(--dora-red)]">完美通關！生物分類大師！</span><br>
+                    你已經完全精通生物特徵的推演與分類，快前往下一站吧！
                 </div>
             </div>
         </section>
@@ -345,7 +396,7 @@
         <div id="next-page-locked" class="text-center mt-8 mb-16">
             <button class="bg-gray-400 text-white rounded-full px-8 py-4 font-black text-xl md:text-2xl cursor-not-allowed inline-flex items-center gap-3 shadow-inner">
                 <i class="fa-solid fa-lock text-2xl md:text-3xl"></i>
-                完成檢索表分類以解鎖任意門
+                完成兩項任務以解鎖任意門
             </button>
         </div>
         
@@ -369,7 +420,7 @@
     </div>
 
     <script>
-        // 生物資料庫 (移除病毒，剩下 5 大分類)
+        // ================= 資料庫與初始化 =================
         const bioDB = {
             'bacteria': ['金黃色葡萄球菌', '乳酸菌', '結核桿菌', '瘤胃球菌', '鉤端螺旋體'],
             'cyano': ['顫藻', '念珠藻', '色球藻'],
@@ -378,24 +429,37 @@
             'slime': ['黏菌']
         };
 
-        let activeCard = null;
+        const t2Cards = [
+            { id: 't2-eu', html: '具有細胞核<br><span class="text-sm font-normal">(真核生物)</span>' },
+            { id: 't2-pro', html: '不具細胞核<br><span class="text-sm font-normal">(原核生物)</span>' },
+            { id: 't2-wall', html: '具有細胞壁' },
+            { id: 't2-no-wall', html: '不具細胞壁' },
+            { id: 't2-chloro', html: '含有葉綠體<br><span class="text-sm font-normal">可行光合作用</span>' },
+            { id: 't2-no-chloro', html: '無葉綠體<br><span class="text-sm font-normal">分解有機物維生</span>' },
+            { id: 't2-chlorophyll', html: '含有葉綠素<br><span class="text-sm font-normal">可行光合作用</span>' },
+            { id: 't2-no-chlorophyll', html: '不含葉綠素' }
+        ];
 
-        // 初始化：隨機抽取 5 個生物並產生字卡
-        function initGame() {
+        let activeCard1 = null;
+        let activeCard2 = null;
+
+        window.onload = () => {
+            initGame1();
+            initGame2();
+        };
+
+        // ================= 任務一邏輯 =================
+        function initGame1() {
             const bank = document.getElementById('card-bank');
             let selectedCards = [];
 
-            // 從每一個分類中各抽一個
             for (let category in bioDB) {
                 const speciesArray = bioDB[category];
                 const randomSpecies = speciesArray[Math.floor(Math.random() * speciesArray.length)];
                 selectedCards.push({ id: category, name: randomSpecies });
             }
-
-            // 打亂這 5 張卡的順序
             selectedCards.sort(() => Math.random() - 0.5);
 
-            // 產生 HTML 字卡
             selectedCards.forEach(cardData => {
                 const div = document.createElement('div');
                 div.className = 'bac-card';
@@ -406,31 +470,25 @@
             });
         }
 
-        // 點擊字卡邏輯
         function handleCardClick(card) {
-            // 若卡片在格子上，退回題庫
             if (card.parentElement.id !== 'card-bank') {
                 const zone = card.parentElement;
                 document.getElementById('card-bank').appendChild(card);
-                zone.querySelector('span').style.display = 'block'; // 恢復提示字
+                zone.querySelector('span').style.display = 'block'; 
                 return;
             }
-
-            // 在題庫中選取
-            if (activeCard === card) {
+            if (activeCard1 === card) {
                 card.classList.remove('selected');
-                activeCard = null;
+                activeCard1 = null;
             } else {
-                if (activeCard) activeCard.classList.remove('selected');
+                if (activeCard1) activeCard1.classList.remove('selected');
                 card.classList.add('selected');
-                activeCard = card;
+                activeCard1 = card;
             }
         }
 
-        // 點擊空框放入邏輯
         function handleZoneClick(zone) {
-            if (!activeCard) {
-                // 退回已在框內的卡片
+            if (!activeCard1) {
                 const existing = zone.querySelector('.bac-card');
                 if(existing) {
                     document.getElementById('card-bank').appendChild(existing);
@@ -438,18 +496,15 @@
                 }
                 return;
             }
-
-            // 放入格子
             const existing = zone.querySelector('.bac-card');
             if (existing) document.getElementById('card-bank').appendChild(existing);
 
-            zone.appendChild(activeCard);
-            activeCard.classList.remove('selected');
-            activeCard = null;
-            zone.querySelector('span').style.display = 'none'; // 隱藏提示字
+            zone.appendChild(activeCard1);
+            activeCard1.classList.remove('selected');
+            activeCard1 = null;
+            zone.querySelector('span').style.display = 'none'; 
         }
 
-        // 檢查答案
         function checkAnswers() {
             const zones = document.querySelectorAll('.drop-zone');
             let isComplete = true;
@@ -457,36 +512,110 @@
 
             zones.forEach(zone => {
                 const card = zone.querySelector('.bac-card');
-                if (!card) {
-                    isComplete = false;
-                } else {
-                    if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) {
-                        isCorrect = false;
-                    }
-                }
+                if (!card) { isComplete = false; } 
+                else if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) { isCorrect = false; }
             });
 
             if (!isComplete) {
-                showToast(false, '任務未完成', '請把上方 5 張字卡，都放入樹狀圖最右側的對應空格中喔！');
+                showToast(false, '任務一未完成', '請把上方 5 張字卡，都放入樹狀圖最右側的空格中喔！');
                 return;
             }
 
             if (isCorrect) {
-                document.getElementById('success-feedback').style.display = 'block';
-                document.getElementById('next-page-locked').style.display = 'none';
-                document.getElementById('next-page-container').style.display = 'block';
-                showToast(true, '鑑定完全正確！', '你成功運用檢索表找出了這 5 個生物的真實身分！');
+                document.getElementById('btn-check-1').style.display = 'none';
+                document.getElementById('task1-success').style.display = 'block';
+                document.getElementById('task2-container').style.display = 'block';
+                showToast(true, '鑑定完全正確！', '你成功找出了這 5 個生物！接下來進入任務二，把特徵補回去吧！');
                 
-                // 捲動到底部
                 setTimeout(() => {
-                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                }, 300);
+                    document.getElementById('task2-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 800);
             } else {
                 showToast(false, '分類有誤喔！', '請順著樹狀圖的特徵路線，從左到右重新檢查看看是哪個步驟走錯了。');
             }
         }
 
-        // Toast 系統
+        // ================= 任務二邏輯 =================
+        function initGame2() {
+            const bank = document.getElementById('card-bank-t2');
+            const shuffled = [...t2Cards].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(cardData => {
+                const div = document.createElement('div');
+                div.className = 'bac-card-t2';
+                div.innerHTML = cardData.html;
+                div.setAttribute('data-id', cardData.id);
+                div.onclick = () => handleCardClick2(div);
+                bank.appendChild(div);
+            });
+        }
+
+        function handleCardClick2(card) {
+            if (card.parentElement.id !== 'card-bank-t2') {
+                const zone = card.parentElement;
+                document.getElementById('card-bank-t2').appendChild(card);
+                zone.querySelector('span').style.display = 'block'; 
+                return;
+            }
+            if (activeCard2 === card) {
+                card.classList.remove('selected');
+                activeCard2 = null;
+            } else {
+                if (activeCard2) activeCard2.classList.remove('selected');
+                card.classList.add('selected');
+                activeCard2 = card;
+            }
+        }
+
+        function handleZoneClick2(zone) {
+            if (!activeCard2) {
+                const existing = zone.querySelector('.bac-card-t2');
+                if(existing) {
+                    document.getElementById('card-bank-t2').appendChild(existing);
+                    zone.querySelector('span').style.display = 'block';
+                }
+                return;
+            }
+            const existing = zone.querySelector('.bac-card-t2');
+            if (existing) document.getElementById('card-bank-t2').appendChild(existing);
+
+            zone.appendChild(activeCard2);
+            activeCard2.classList.remove('selected');
+            activeCard2 = null;
+            zone.querySelector('span').style.display = 'none'; 
+        }
+
+        function checkAnswers2() {
+            const zones = document.querySelectorAll('.drop-zone-t2');
+            let isComplete = true;
+            let isCorrect = true;
+
+            zones.forEach(zone => {
+                const card = zone.querySelector('.bac-card-t2');
+                if (!card) { isComplete = false; } 
+                else if (card.getAttribute('data-id') !== zone.getAttribute('data-accept')) { isCorrect = false; }
+            });
+
+            if (!isComplete) {
+                showToast(false, '任務二未完成', '請把上方 8 張特徵字卡，全部放入檢索表的路線節點中！');
+                return;
+            }
+
+            if (isCorrect) {
+                document.getElementById('task2-success').style.display = 'block';
+                document.getElementById('next-page-locked').style.display = 'none';
+                document.getElementById('next-page-container').style.display = 'block';
+                showToast(true, '特徵還原成功！', '你已經完全精通生物分類的檢索邏輯，恭喜過關！');
+                
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 800);
+            } else {
+                showToast(false, '特徵放錯囉！', '請反向推演，例如「藻類」應該具備什麼樣的構造與功能？重新檢查一遍路線吧。');
+            }
+        }
+
+        // ================= Toast 系統 =================
         function showToast(isSuccess, titleMsg, descMsg) {
             const modal = document.getElementById('toast-modal');
             const icon = document.getElementById('toast-icon');
@@ -504,9 +633,6 @@
             modal.style.display = 'flex';
         }
         function closeToast() { document.getElementById('toast-modal').style.display = 'none'; }
-
-        // 網頁載入時啟動遊戲
-        window.onload = initGame;
     </script>
 </body>
 </html>
