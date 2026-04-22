@@ -685,7 +685,7 @@
             document.getElementById('login-form').appendChild(loadingDiv);
 
             // 參數設定：傳送 2 給 GAS 腳本，使用 score=2 與 completed=2
-            const requestUrl = `${GAS_URL}?class=${encodeURIComponent(cls)}&seat=${encodeURIComponent(seat)}&score=2&completed=2`;
+            const requestUrl = `${GAS_URL}?class=${encodeURIComponent(cls)}&seat=${encodeURIComponent(seat)}&score=2&completed=1`;
 
             try {
                 await fetch(requestUrl, { mode: 'no-cors' });
